@@ -8,7 +8,6 @@ for i in range(20):
     print(url)
     headers = {
         "accept": "application/json",
-        "Authorization": "Bearer OgMPXTSv35hF6ePr6wP92zYR3v7VpEwIkYsEj1Nau5ILPT5sf2hkGLfkdbd_DgmQKD6p26GINlMbCHoELyjiSw7oXB-AsAtRttfs1lrerLntTPsDUjJdwgZATyyAZnYx"
     }
 
     response = requests.get(url, headers=headers)
