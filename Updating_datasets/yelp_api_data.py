@@ -33,12 +33,12 @@ for i in range(20):
             Read_data['businesses'].append(bus)
         
 
-    print("At iteration" + i.__str__() + " We added " + count.__str__() + " elements")
+    print("At iteration " + i.__str__() + " We added " + count.__str__() + " elements")
  
     Read_data['total'] = len(Read_data['businesses'])
   
-    # if(count < 3): 
-    #     break
+    if(count < 3): 
+        break
     
 
     with open("data.json", "w") as file_output:
