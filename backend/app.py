@@ -1,21 +1,42 @@
-from flask import Flask, request, jsonify
+from fastapi import FastAPI, HTTPException
 from pymongo import MongoClient
+from bson import ObjectId
+import json
+from bson import json_util
+from pydantic import BaseModel
 
-app = Flask(__name__)
+# initialisation 
+app = FastAPI()
 
-# MongoDB Atlas connection string
-client = MongoClient('mongodb+srv://loko:<melike2004>@lovelores.h1nkog2.mongodb.net/?retryWrites=true&w=majority&appName=LoveLores')
+# setting up mongoDB connection 
+client = MongoClient("mongodb+srv://noobylub:thispassword@lovelores.h1nkog2.mongodb.net/?retryWrites=true&w=majority&appName=LoveLores")
+db = client.GoSpot
+users = db.User
 
-try:
-    client.admin.command('ping')
-    print("Pinged your deployment. You successfully connected to MongoDB!")
-except Exception as e:
-    print("failed")
-    print(e)
+# Required as mongoDB is in BSON, and fastapi just said its too much to handle
+def parse_json(data):
+    return json.loads(json_util.dumps(data))
 
-# @app.route('/')
-# def index():
-#     return "Welcome to the Flask MongoDB app!"
 
-if __name__ == '__main__':
-    app.run(debug=True)
+# pydantic classes to define against the body 
+class User(BaseModel):
+    name: str
+
+
+
+# testing retrieval
+@app.get("/")
+async def root():
+    foundUser = (users.find_one(ObjectId('66826eee6ac658e7e22048e3')))
+    print(foundUser['name'])
+    foundUser = parse_json(foundUser)
+    return foundUser
+
+# testing insertions
+@app.get("/insert/")
+async def inserting(name: str ='default',friendsList: list=[],placesReview:list=[]):
+    users.insert_one({
+        "name":name,
+        "friendsList":friendsList,
+        "placesReviewed":placesReview
+    })
