@@ -1,4 +1,4 @@
-import requests, json
+import requests, json 
 
 for i in range(20):
     
@@ -36,7 +36,7 @@ for i in range(20):
  
     Read_data['total'] = len(Read_data['businesses'])
   
-    if(count < 3): 
+    if(count < 4): 
         break
     
 
