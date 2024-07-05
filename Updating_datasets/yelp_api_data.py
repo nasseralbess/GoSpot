@@ -36,7 +36,7 @@ for i in range(20):
  
     Read_data['total'] = len(Read_data['businesses'])
   
-    if(count < 5): 
+    if(count < 6): 
         break
     
 
