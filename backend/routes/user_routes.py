@@ -33,6 +33,7 @@ def insertUser():
     user = db['User']
     # Starting data, so starting with no friends
     # Password should already be hashed 
+    # Not sure if I should add validation for this
     user_data = {
         "name": data.get("name"),
         "password": data.get("password"),
@@ -82,4 +83,3 @@ def swipedRight():
         return jsonify({'status': 'No valid interactions found'}), 400
 
 
-# Chang
