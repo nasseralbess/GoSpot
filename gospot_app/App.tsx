@@ -2,7 +2,7 @@ import 'react-native-gesture-handler';
 import { StatusBar } from 'expo-status-bar';
 import { Pressable, Text, StyleSheet, View } from 'react-native';
 import Card from "./src/components/TinderCard/Index";
-import users from "./TinderAssets/assets/data/users";
+import users from "./TinderAssets/data/users";
 import Animated, { useSharedValue, useAnimatedStyle, withSpring, useAnimatedGestureHandler } from 'react-native-reanimated';
 import { GestureDetector, GestureHandlerRootView, PanGestureHandler, Gesture } from 'react-native-gesture-handler';
 
