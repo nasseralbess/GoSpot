@@ -1,9 +1,9 @@
 import 'react-native-gesture-handler';
 import { StatusBar } from 'expo-status-bar';
-import { Pressable, Text, StyleSheet, View } from 'react-native';
+import { Pressable, Text, StyleSheet, View, useWindowDimensions } from 'react-native';
 import Card from "./src/components/TinderCard/Index";
 import users from "./TinderAssets/data/users";
-import Animated, { useSharedValue, useAnimatedStyle, withSpring, useAnimatedGestureHandler } from 'react-native-reanimated';
+import Animated, { useSharedValue, useAnimatedStyle, withSpring, interpolate, useDerivedValue } from 'react-native-reanimated';
 import { GestureDetector, GestureHandlerRootView, PanGestureHandler, Gesture } from 'react-native-gesture-handler';
 
 
@@ -15,8 +15,9 @@ const jeff = {
 }
 
 export default function App() {
-
+  const {width: screenWidth} = useWindowDimensions();
   const translateX = useSharedValue(0);
+  const rotate= useDerivedValue(() => interpolate( translateX.value, [0, screenWidth],  [0,60]) + 'deg');
 
   const cardSyle = useAnimatedStyle(() => ({
     transform: [
@@ -24,6 +25,9 @@ export default function App() {
         translateX: translateX.value,
 
       },
+      {
+        rotate: rotate.value,
+      }
     ],
     // opacity : sharedValue.value,
   }));
