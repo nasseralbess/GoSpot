@@ -24,6 +24,8 @@ def getUser():
     users = user.find_one({'name':'default'})
     return json_util.dumps(users)
 
+#  Insrting a user based on 
+
 # Insertin a user
 @normal_route.route('/insert-user',methods=['POST'])
 def insertUser():
@@ -40,7 +42,8 @@ def insertUser():
         "age": data.get("age"),
         "country_origin": data.get("country_origin"),
         "friends":[],
-        "interactions": [],
+        "location_specific": [],
+        # all good
         "general_preferences": {
             "price": data.get("general_preferences", {}).get("price"),
             "categories": data.get("general_preferences", {}).get("categories"),
@@ -60,7 +63,6 @@ def swipedRight():
     data = request.json
     update_user = request.args.get('user')
    
-
     try:
         validated_data = record_activity_schema.load(data)
     except ValidationError as err:
