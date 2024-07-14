@@ -42,7 +42,7 @@ def insertUser():
         "age": data.get("age"),
         "country_origin": data.get("country_origin"),
         "friends":[],
-        "location_specific": [],
+        "location_specific": {},
         # all good
         "general_preferences": {
             "price": data.get("general_preferences", {}).get("price"),
@@ -58,30 +58,40 @@ def insertUser():
 # We will be creating it in five batches,
 # In the client side we will do batching with localstorage 
 # Possibly add some validation here
-@normal_route.route("/swipe_information", methods=["POST"])
-def swipedRight():
+@normal_route.route("/swipe-information", methods=["POST"])
+def addLocationPreferences():
     data = request.json
-    update_user = request.args.get('user')
+    update_user = request.args.get('user')  # User ID passed as query parameter
+
+
    
+    # Validate the incoming data against the schema
     try:
         validated_data = record_activity_schema.load(data)
     except ValidationError as err:
-        return jsonify(err.messages), 400
-    
-  
-    # Inserting data
-    swipe_data = validated_data['interactions']
+        # If validation fails, return the errors
+        return jsonify({'errors': err.messages}), 400
+
+
     db = current_app.config['db']
     all_users = db['User']
-    # return (swipe_data)
+    actual_data = validated_data['interactions']
+
+    # Preparing update document using dynamic $set operations for each key in the location_preferences
+    update_operations = {"$set": {}}
+    for key, preference in actual_data.items():
+        update_operations["$set"][f"location_specific.{key}"] = preference
+    print(update_operations)
+    # Updating the user document to include new location specific preferences under their specific keys
     result = all_users.update_one(
-        {"_id":ObjectId( update_user)},
-        {"$push": {"interactions": {"$each": swipe_data}}}
+        {"_id": ObjectId(update_user)},
+        update_operations
     )
-    # return interactions
+
     if result.modified_count > 0:
-        return jsonify({'status': 'Activities recorded'}), 200
+        return jsonify({'status': 'Location preferences successfully added'}), 200
     else:
-        return jsonify({'status': 'No valid interactions found'}), 400
+        return jsonify({'status': 'Update failed or no changes made'}), 400
+
 
 
