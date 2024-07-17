@@ -3,7 +3,7 @@ import React, { useEffect, useState } from 'react';
 import { StyleSheet, View, useWindowDimensions } from 'react-native';
 import Card from "./src/components/TinderCard/Index";
 import users from "./TinderAssets/data/users";
-import Animated, { useSharedValue, useAnimatedStyle, withSpring, interpolate, useDerivedValue, runOnJS } from 'react-native-reanimated';
+import Animated, { useSharedValue, useAnimatedStyle, withSpring, interpolate, runOnJS} from 'react-native-reanimated';
 import { GestureDetector, GestureHandlerRootView, Gesture } from 'react-native-gesture-handler';
 
 const ROTATION = 60;
@@ -11,18 +11,13 @@ const SWIPE_VELOCITY = 800;
 
 export default function App() {
   const [currentIndex, setCurrentIndex] = useState(0);
-  const [nextIndex, setNextIndex] = useState(currentIndex + 1);
 
   const currentUser = users[currentIndex % users.length];
-  const nextUser = users[nextIndex % users.length];
+  const nextUser = users[(currentIndex + 1) % users.length];
 
   const { width: screenWidth } = useWindowDimensions();
   const translateX = useSharedValue(0);
   const hiddenTranslateX = 2 * screenWidth;
-
-  const rotate = useDerivedValue(() =>
-    interpolate(translateX.value, [0, hiddenTranslateX], [0, ROTATION]) + 'deg'
-  );
 
   const cardStyle = useAnimatedStyle(() => ({
     transform: [
@@ -30,7 +25,7 @@ export default function App() {
         translateX: translateX.value,
       },
       {
-        rotate: rotate.value,
+        rotate: interpolate(translateX.value, [0, hiddenTranslateX], [0, ROTATION]) + 'deg',
       },
     ],
   }));
@@ -57,27 +52,30 @@ export default function App() {
       translateX.value = withSpring(
         hiddenTranslateX * Math.sign(event.velocityX),
         {},
-        () => runOnJS(setCurrentIndex)(currentIndex + 1)
+        () => {
+          runOnJS(setCurrentIndex)((currentIndex + 1) % users.length);
+          translateX.value = 0; // Reset translateX after swipe
+        }
       );
     });
 
   useEffect(() => {
     translateX.value = 0;
-    setNextIndex(currentIndex + 1);
-  }, [currentIndex, translateX]);
+  }, [currentIndex]);
 
   return (
     <GestureHandlerRootView style={styles.pageContainer}>
-      <View style={styles.nextCardContainer}>
+      {nextUser &&<View style={styles.nextCardContainer}>
         <Animated.View style={[styles.animatedCards, nextCardStyle]}>
           <Card user={nextUser} />
         </Animated.View>
-      </View>
-      <GestureDetector gesture={panGesture}>
+      </View>} 
+      
+      {currentUser && <GestureDetector gesture={panGesture}>
         <Animated.View style={[styles.animatedCards, cardStyle]}>
           <Card user={currentUser} />
         </Animated.View>
-      </GestureDetector>
+      </GestureDetector>} 
     </GestureHandlerRootView>
   );
 }
@@ -98,6 +96,6 @@ const styles = StyleSheet.create({
   nextCardContainer: {
     ...StyleSheet.absoluteFillObject,
     alignItems: 'center',
-    justifyContent: 'center', 
+    justifyContent: 'center',
   },
 });
