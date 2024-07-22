@@ -1,97 +1,128 @@
-import json
-from bson.objectid import ObjectId
-from schemas.user_schema import InteractionSchema, RecordActivitySchema
-from bson import json_util
 from flask import Blueprint, request, jsonify, current_app
-from marshmallow import ValidationError
+from bson import ObjectId
+from datetime import datetime
+from helpers import get_next_items, get_group_recommendation
 
-
-# Setup 
 normal_route = Blueprint('normal_routes', __name__)
-# Helper method 
-def parse_json(data):
-    return json.loads(json_util.dumps(data))
-# For future schema validation 
-record_activity_schema = RecordActivitySchema()
 
-
-
-# teting routes 
-@normal_route.route('/you', methods=['GET'])
-def getUser():
-    db = current_app.config['db']
-    user = db['User']
-    users = user.find_one({'name':'default'})
-    return json_util.dumps(users)
-
-#  Insrting a user based on 
-
-# Insertin a user
-@normal_route.route('/insert-user',methods=['POST'])
-def insertUser():
+@normal_route.route('/add-user', methods=['POST'])
+def add_new_user():
     data = request.json
-    # password should already by hashed
     db = current_app.config['db']
     user = db['User']
-    # Starting data, so starting with no friends
-    # Password should already be hashed 
-    # Not sure if I should add validation for this
-    user_data = {
-        "name": data.get("name"),
-        "password": data.get("password"),
-        "age": data.get("age"),
-        "country_origin": data.get("country_origin"),
-        "friends":[],
-        "location_specific": {},
-        # all good
-        "general_preferences": {
-            "price": data.get("general_preferences", {}).get("price"),
-            "categories": data.get("general_preferences", {}).get("categories"),
-            "coordinates": data.get("general_preferences", {}).get("coordinates")
-        }
+
+    user_id = data.get('user_id')
+    if user.find_one({'_id': user_id}):
+        return jsonify({'error': 'User ID already exists'}), 400
+
+    new_user = {
+        '_id': user_id,
+        'general_preferences': data.get('general_preferences'),
+        'location_specific': {},
+        'friends': [],
+        'name': data.get('name'),
+        'password': data.get('password'),
+        'age': data.get('age'),
+        'last_active': datetime.now()
     }
-    result = user.insert_one(user_data)
-    return jsonify({'status': 'Data inserted', 'id': str(result.inserted_id)}), 201
 
+    user.insert_one(new_user)
+    return jsonify({'message': f"New user {user_id} added successfully"}), 201
 
-# The user has swiped 
-# We will be creating it in five batches,
-# In the client side we will do batching with localstorage 
-# Possibly add some validation here
-@normal_route.route("/swipe-information", methods=["POST"])
-def addLocationPreferences():
+@normal_route.route('/update-preferences', methods=['PUT'])
+def update_user_preferences():
     data = request.json
-    update_user = request.args.get('user')  # User ID passed as query parameter
-
-
-   
-    # Validate the incoming data against the schema
-    try:
-        validated_data = record_activity_schema.load(data)
-    except ValidationError as err:
-        # If validation fails, return the errors
-        return jsonify({'errors': err.messages}), 400
-
+    user_id = data.get('user_id')
+    new_preferences = data.get('new_preferences')
 
     db = current_app.config['db']
-    all_users = db['User']
-    actual_data = validated_data['interactions']
+    user = db['User']
 
-    # Preparing update document using dynamic $set operations for each key in the location_preferences
-    update_operations = {"$set": {}}
-    for key, preference in actual_data.items():
-        update_operations["$set"][f"location_specific.{key}"] = preference
-    print(update_operations)
-    # Updating the user document to include new location specific preferences under their specific keys
-    result = all_users.update_one(
-        {"_id": ObjectId(update_user)},
-        update_operations
+    result = user.update_one(
+        {'_id': user_id},
+        {
+            '$set': {
+                'general_preferences': new_preferences,
+                'last_active': datetime.now()
+            }
+        }
     )
 
-    if result.modified_count > 0:
-        return jsonify({'status': 'Location preferences successfully added'}), 200
+    if result.modified_count:
+        return jsonify({'message': f"Preferences updated for user {user_id}"}), 200
     else:
-        return jsonify({'status': 'Update failed or no changes made'}), 400
+        return jsonify({'error': 'User not found or no changes made'}), 404
 
+@normal_route.route('/record-interaction', methods=['POST'])
+def record_spot_interaction():
+    data = request.json
+    user_id = data.get('user_id')
+    spot_id = data.get('spot_id')
+    interaction = data.get('interaction')
 
+    db = current_app.config['db']
+    user = db['User']
 
+    result = user.update_one(
+        {'_id': user_id},
+        {
+            '$set': {
+                f'location_specific.{spot_id}': interaction,
+                'last_active': datetime.now()
+            }
+        }
+    )
+
+    if result.modified_count:
+        return jsonify({'message': f"Interaction recorded for user {user_id} with spot {spot_id}"}), 200
+    else:
+        return jsonify({'error': 'User not found or no changes made'}), 404
+
+@normal_route.route('/update-coordinates', methods=['PUT'])
+def update_user_coordinates():
+    data = request.json
+    user_id = data.get('user_id')
+    new_coordinates = data.get('new_coordinates')
+
+    db = current_app.config['db']
+    user = db['User']
+
+    result = user.update_one(
+        {'_id': user_id},
+        {
+            '$set': {
+                'general_preferences.coordinates': new_coordinates,
+                'last_active': datetime.now()
+            }
+        }
+    )
+
+    if result.modified_count:
+        return jsonify({'message': f"Coordinates updated for user {user_id}"}), 200
+    else:
+        return jsonify({'error': 'User not found or no changes made'}), 404
+
+@normal_route.route('/get-next-spot', methods=['GET'])
+def get_next_spot():
+    user_id = request.args.get('user_id')
+    next_spot = get_next_items(user_id)
+    db = current_app.config['db']
+    user = db['User']
+    seen = list(user.find_one({'_id': user_id}).get('location_specific', {}).keys())
+    if next_spot is None:
+        return jsonify({'message': 'No more spots available'}), 404
+    for spot in next_spot:
+        if spot not in seen:
+            return jsonify(next_spot.to_dict()), 200
+    
+    return jsonify({'message': 'No more spots available'}), 404
+
+@normal_route.route('/get-group-spot', methods=['GET'])
+def get_next_group_spot():
+    user_ids = request.args.getlist('user_ids')
+    group_spot = get_group_recommendation(user_ids)
+    
+    if group_spot is not None:
+        return jsonify(group_spot.to_dict()), 200
+    else:
+        return jsonify({'message': 'No group spot available'}), 404

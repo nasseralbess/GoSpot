@@ -1,5 +1,8 @@
 from flask import current_app
 import numpy as np
+from sklearn.metrics.pairwise import cosine_similarity
+import pandas as pd
+import random
 
 def get_db():
     return current_app.config['db']
@@ -19,7 +22,10 @@ def get_df():
 def get_coordinate_scaler():
     return current_app.config['coordinate_scaler']
 
-
+def get_spot_details():
+    return current_app.config['spot_details']
+# def get_item_similarity():
+#     return current_app.config['item_similarity']
 
 def get_user_profile(user_id, tfidf, coordinate_scaler):
     db = get_db()
@@ -89,3 +95,136 @@ def get_user_profile(user_id, tfidf, coordinate_scaler):
         user_vector /= norm
     
     return user_vector
+
+
+def get_group_profile(user_ids, tfidf, coordinate_scaler):
+    features = get_features()
+    group_vector = np.zeros(features.shape[1])
+    for user_id in user_ids:
+        user_vector = get_user_profile(user_id, tfidf, coordinate_scaler)
+        group_vector += user_vector
+    
+    # Normalize the group vector
+    norm = np.linalg.norm(group_vector)
+    if norm > 0:
+        group_vector /= norm
+    
+    return group_vector
+
+
+def popular_items_recommend(n):
+    # Recommend based on a combination of rating and review count
+    df = get_df()
+    scores = df['review_count'] * df['rating'].fillna(0)
+    top_indices = scores.argsort()[-n:][::-1]
+    recommended_ids = df.iloc[top_indices]['id'].tolist()
+    spot_details = get_spot_details()
+    return spot_details[spot_details['id'].isin(recommended_ids)][['id', 'name', 'image_url', 'phone']]
+
+
+def user_based_recommend(user_id, n):
+    db = get_db()
+    user = db['User']
+    features = get_features()
+    df = get_df()
+    tfidf = get_tfidf()
+    spot_details = get_spot_details()
+    coordinate_scaler = get_coordinate_scaler()
+    if user_id not in user.distinct('_id'):
+        # New user: use a fallback method (e.g., popular items)
+        return popular_items_recommend(n)
+    
+    user_profile = get_user_profile(user_id, tfidf, coordinate_scaler)
+    scores = cosine_similarity([user_profile], features)[0]
+    
+    top_indices = scores.argsort()[-n:][::-1]
+    recommended_ids = df.iloc[top_indices]['id'].tolist()
+    
+    return spot_details[spot_details['id'].isin(recommended_ids)][['id', 'name', 'image_url', 'phone']]
+
+
+# def item_based_recommend(base_items, n):
+#     df = get_df()
+#     item_similarity = get_item_similarity()
+#     spot_details = get_spot_details()
+#     base_indices = df[df['id'].isin(base_items['id'])].index
+    
+#     similar_items = set()
+#     for idx in base_indices:
+#         # Get top similar items for each base item
+#         similar_indices = item_similarity[idx].argsort()[-n:][::-1]
+#         similar_items.update(df.iloc[similar_indices]['id'].tolist())
+    
+#     # Remove base items from similar items
+#     similar_items = list(similar_items - set(base_items['id']))
+    
+#     # If we don't have enough similar items, pad with popular items
+#     if len(similar_items) < n:
+#         popular = popular_items_recommend(n - len(similar_items))
+#         similar_items.extend(popular['id'].tolist())
+    
+#     return spot_details[spot_details['id'].isin(similar_items[:n])][['id', 'name', 'image_url', 'phone']]
+
+def group_based_recommend(user_ids, n=10):
+    features = get_features()
+    df = get_df()
+    tfidf = get_tfidf()
+    spot_details = get_spot_details()
+    coordinate_scaler = get_coordinate_scaler()
+    group_profile = get_group_profile(user_ids, tfidf, coordinate_scaler)
+    scores = cosine_similarity([group_profile], features)[0]
+    
+    top_indices = scores.argsort()[-n:][::-1]
+    recommended_ids = df.iloc[top_indices]['id'].tolist()
+    
+    return spot_details[spot_details['id'].isin(recommended_ids)][['id', 'name', 'image_url', 'phone']]
+
+def least_misery_group_recommend(user_ids, n=10):
+    individual_scores = []
+    features = get_features()
+    df = get_df()
+    tfidf = get_tfidf()
+    spot_details = get_spot_details()
+    coordinate_scaler = get_coordinate_scaler()
+    for user_id in user_ids:
+        user_profile = get_user_profile(user_id, tfidf, coordinate_scaler)
+        scores = cosine_similarity([user_profile], features)[0]
+        individual_scores.append(scores)
+    
+    # Take the minimum score for each item across all users
+    group_scores = np.min(individual_scores, axis=0)
+    
+    top_indices = group_scores.argsort()[-n:][::-1]
+    recommended_ids = df.iloc[top_indices]['id'].tolist()
+    
+    return spot_details[spot_details['id'].isin(recommended_ids)][['id', 'name', 'image_url', 'phone']]
+
+    return None
+
+def get_group_recommendation(user_ids):
+    # You could alternate between different group recommendation strategies
+    strategies = [group_based_recommend, least_misery_group_recommend]
+    strategy = random.choice(strategies)
+    
+    recommendations = strategy(user_ids, n=1)
+    if not recommendations.empty:
+        return recommendations.iloc[0]
+    else:
+        return None
+    
+def get_next_items(user_id, n=10):
+    # Ensure n is even
+    n = n if n % 2 == 0 else n + 1
+    
+    # Get n/2 recommendations based on user profile
+    user_based_recommendations = user_based_recommend(user_id, n)#n // 2)
+    
+    # Get n/2 recommendations based on item similarity to the user-based recommendations
+    #item_based_recommendations = item_based_recommend(user_based_recommendations, n // 2)
+    
+    # Combine and shuffle the recommendations
+    #all_recommendations = pd.concat([user_based_recommendations, item_based_recommendations])
+    # all_recommendations.sample(n=len(all_recommendations))
+    # return all_recommendations
+    return user_based_recommendations
+

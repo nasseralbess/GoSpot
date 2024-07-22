@@ -15,6 +15,7 @@ from sklearn.preprocessing import MinMaxScaler
 from sklearn.metrics.pairwise import cosine_similarity
 # ONLY FOR TESTING PURPOSES 
 # from flask_wtf.csrf import CSRFProtect
+from scipy.sparse import csr_matrix
 
 category_mapping = {
     'American': ['American', 'New American', 'Southern', 'Soul Food', 'Cajun/Creole', 'Tex-Mex'],
@@ -130,6 +131,8 @@ def create_app():
     # Load and preprocess data
     df = preprocess_data(initial_weights)
     features, tfidf, coordinate_scaler = create_feature_matrix(df)
+    # features_sparse = csr_matrix(features)
+    # item_similarity = cosine_similarity(features_sparse, dense_output=False)
     #item_similarity = cosine_similarity(features)
 
     #app.config['item_similarity'] = item_similarity
@@ -139,6 +142,8 @@ def create_app():
     app.config['features'] = features
     app.config['reverse_category_mapping'] = reverse_category_mapping
     app.config['db'] = db
+    app.config['spot_details'] = spot_details
+    #app.config['item_similarity'] = item_similarity
 
     app.register_blueprint(normal_route, url_prefix='/user')
 
@@ -147,8 +152,8 @@ def create_app():
 if __name__ == '__main__':
     app = create_app()
     
-    with app.app_context():
-        from helpers import get_user_profile, get_tfidf, get_coordinate_scaler
-        print(get_user_profile(1, get_tfidf(), get_coordinate_scaler()))
+    # with app.app_context():
+    #     from helpers import get_user_profile, get_tfidf, get_coordinate_scaler
+    #     print(get_user_profile(1, get_tfidf(), get_coordinate_scaler()))
     
     app.run(debug=True)
