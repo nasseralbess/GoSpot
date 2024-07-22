@@ -1,17 +1,39 @@
 import {Text, Image, ImageBackground ,View, StyleSheet} from "react-native";
+import Swiper from 'react-native-deck-swiper';
 
 const Card = (props) => {
     const {name, image, bio} = props.user;
  return (
 
-        <View style = {styles.card}>
-                <ImageBackground source ={{uri:image }}  style={styles.image}  > 
-                    <View style = {styles.cardInner}>
-                        <Text style = {styles.name}> {name} </Text>
-                        <Text style = {styles.bio} >{bio} </Text>
-                    </View>
-                </ImageBackground>
-            </View>
+        // <View style = {styles.card}>
+                // <ImageBackground source ={{uri:image }}  style={styles.image}  > 
+                //     <View style = {styles.cardInner}>
+                //         <Text style = {styles.name}> {name} </Text>
+                //         <Text style = {styles.bio} >{bio} </Text>
+                //     </View>
+                // </ImageBackground>
+        //     </View>
+        <Swiper
+        cards={users}
+        renderCard={(user) => (
+          <View style={styles.card}>
+            {/* <Image source={{ uri: user.image }} style={styles.image} /> */}
+            <Text >{name}</Text>
+            <Text>{bio}</Text>
+          </View>
+        )}
+        onSwiped={(cardIndex) => {
+          console.log(cardIndex);
+          setIndex(cardIndex + 1);
+        }}
+        onSwipedAll={() => {
+          console.log('All cards swiped');
+          setIndex(0); // Reset the index to loop the cards
+        }}
+        cardIndex={index}
+        backgroundColor={'#4FD0E9'}
+        stackSize={3}
+      />
  );
 };
 
