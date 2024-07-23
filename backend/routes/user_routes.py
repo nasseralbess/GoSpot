@@ -104,11 +104,22 @@ def update_user_coordinates():
 
 @normal_route.route('/get-next-spot', methods=['GET'])
 def get_next_spot():
+    print("\n\n Here \n\n")
     user_id = request.args.get('user_id')
+    print("user_id:",user_id)
     next_spot = get_next_items(user_id)
     db = current_app.config['db']
     user = db['User']
+    try:
+        user_id = int(user_id)
+    except:
+        pass
+    # print("\n\n\n\n\n\n")
+    # print("Bread:",type(user_id))
+    # print("\n\n Db:",db)   
+    # print("\n\n\nfind_one:",user.find_one({'_id': 1}))
     seen = list(user.find_one({'_id': user_id}).get('location_specific', {}).keys())
+    # print("\n\n\n\n\n\n")
     if next_spot is None:
         return jsonify({'message': 'No more spots available'}), 404
     for spot in next_spot:
