@@ -12,16 +12,25 @@ import {SafeAreaView, StyleSheet, Text} from 'react-native';
 import Navigation from './src/navigation';
 import { createStackNavigator } from '@react-navigation/stack';
 import { SavedProvider } from './src/context/SavedContext';
+import { LogtoProvider, LogtoConfig } from '@logto/rn';
+
+const config: LogtoConfig = {
+  endpoint: 'https://969ymo.logto.app/',
+  appId: '3rhs9s1wql5940dy14ab5',
+};
+
 
 const Stack = createStackNavigator();
 const App = () => {
   return (
-    <SafeAreaView style={styles.root}>
+    
+   <LogtoProvider config={config}>
+   <SafeAreaView style={styles.root}>
       <SavedProvider>
-      <Navigation />
+        <Navigation />
       </SavedProvider>
     </SafeAreaView>
-   
+ </LogtoProvider>
   );
 };
 
@@ -33,26 +42,3 @@ const styles = StyleSheet.create({
 });
 
 export default App;
-
-
-////////
-// import React from 'react';
-// import {SafeAreaView, StyleSheet, Text} from 'react-native';
-// import { NavigationContainer } from '@react-navigation/native';
-// import { createStackNavigator } from '@react-navigation/stack';
-// import HomeScreen from './src/screens/HomeScreen';
-// import DetailScreen from './src/screens/DetailScreen/DetailScreen';
-// import Navigation from './src/navigation';
-
-// const Stack = createStackNavigator();
-
-// export default function App() {
-//   return (
-//     <NavigationContainer>
-//       <Stack.Navigator initialRouteName="Home">
-//         <Stack.Screen name="Home" component={HomeScreen} options={{ headerShown: false }} />
-//         <Stack.Screen name="Details" component={DetailScreen} options={{ title: 'User Details' }} />
-//       </Stack.Navigator>
-//     </NavigationContainer>
-//   );
-// }
