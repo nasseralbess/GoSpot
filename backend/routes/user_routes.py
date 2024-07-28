@@ -5,12 +5,15 @@ from helpers import get_next_items, get_group_recommendation
 
 normal_route = Blueprint('normal_routes', __name__)
 
+# Adds a user, and fail if user already exists
+# Works perfectly fine 
 @normal_route.route('/add-user', methods=['POST'])
 def add_new_user():
     data = request.json
     db = current_app.config['db']
     user = db['User']
 
+    # User generated from logto's 
     user_id = data.get('user_id')
     if user.find_one({'_id': user_id}):
         return jsonify({'error': 'User ID already exists'}), 400
@@ -29,6 +32,7 @@ def add_new_user():
     user.insert_one(new_user)
     return jsonify({'message': f"New user {user_id} added successfully"}), 201
 
+# Works perfectly fine 
 @normal_route.route('/update-preferences', methods=['PUT'])
 def update_user_preferences():
     data = request.json
@@ -52,25 +56,40 @@ def update_user_preferences():
         return jsonify({'message': f"Preferences updated for user {user_id}"}), 200
     else:
         return jsonify({'error': 'User not found or no changes made'}), 404
-
+# Works fine but you have to put into batches 
 @normal_route.route('/record-interaction', methods=['POST'])
 def record_spot_interaction():
     data = request.json
     user_id = data.get('user_id')
-    spot_id = data.get('spot_id')
-    interaction = data.get('interaction')
+    # spot_id = data.get('spot_id')
+    interactions = data.get('interaction')
 
     db = current_app.config['db']
     user = db['User']
 
+    # result = user.update_one(
+    #     {'_id': user_id},
+    #     {
+    #         '$set': {
+    #             f'location_specific.{spot_id}': interaction,
+    #             'last_active': datetime.now()
+    #         }
+    #     }
+    # )
+
+
+    update_data = {
+        '$set': {
+            'last_active': datetime.now()
+        }
+    }
+
+    for spot_id, interaction in interactions.items():
+        update_data['$set'][f'location_specific.{spot_id}'] = interaction
+
     result = user.update_one(
         {'_id': user_id},
-        {
-            '$set': {
-                f'location_specific.{spot_id}': interaction,
-                'last_active': datetime.now()
-            }
-        }
+        update_data
     )
 
     if result.modified_count:
@@ -102,6 +121,8 @@ def update_user_coordinates():
     else:
         return jsonify({'error': 'User not found or no changes made'}), 404
 
+
+# Not working
 @normal_route.route('/get-next-spot', methods=['GET'])
 def get_next_spot():
     print("\n\n Here \n\n")
