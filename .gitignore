@@ -237,7 +237,6 @@ yarn-error.*
 
 expo/
 app/
-assets/
 constants/
 scripts/
 node_modules/
