@@ -6,12 +6,14 @@ import {
   StyleSheet,
   useWindowDimensions,
   ScrollView,
+  ActivityIndicator,
 } from 'react-native';
 import Logo from '../../../assets/images/Logo_1.png';
 import CustomInput from '../../components/CustomInput';
 import CustomButton from '../../components/CustomButton';
 import SocialSignInButtons from '../../components/SocialSignInButtons';
 import {useNavigation} from '@react-navigation/native';
+import { useLogto } from '@logto/rn';
 
 const SignInScreen = () => {
   const [username, setUsername] = useState('');
@@ -19,11 +21,22 @@ const SignInScreen = () => {
 
   const {height} = useWindowDimensions();
   const navigation = useNavigation();
+  
+  const { signIn, isAuthenticated, fetchUserInfo } = useLogto();
+  const [loading, setLoading] = useState(false);
 
-  const onSignInPressed = () => {
-    // validate user
-    navigation.navigate('MainTabs');
+  const onSignInPressed = async () => {
+    setLoading(true);
+    try {
+      await signIn('io.logto://callback');
+      await fetchUserInfo();
+        navigation.navigate('MainTabs');
+    } catch (error) {
+      console.error('Sign-in error:', error);
+    }
+    setLoading(false);
   };
+ 
 
   const onForgotPasswordPressed = () => {
     navigation.navigate('ForgotPassword');
@@ -32,7 +45,17 @@ const SignInScreen = () => {
   const onSignUpPress = () => {
     navigation.navigate('SignUp');
   };
-
+  if (loading) {
+    return (
+      <View style={styles.container}>
+        <ActivityIndicator size="large" color="#0000ff" />
+      </View>
+    );
+  }
+  if(isAuthenticated){
+    navigation.navigate('MainTabs');
+  }
+  else{
   return (
     <ScrollView showsVerticalScrollIndicator={false}>
       <View style={styles.root}>
@@ -72,6 +95,7 @@ const SignInScreen = () => {
       </View>
     </ScrollView>
   );
+}
 };
 
 const styles = StyleSheet.create({
