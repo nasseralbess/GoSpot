@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { StyleSheet, View, Text, ImageBackground } from 'react-native';
 import Swiper from 'react-native-deck-swiper';
 import Like from "../../../TinderAssets/images/LIKE.png";
@@ -6,21 +6,33 @@ import Nope from "../../../TinderAssets/images/nope.png";
 import users from "../../../TinderAssets/data/users";
 import Animated from 'react-native-reanimated';
 
-export default function HomeScreen({ navigation }) {
+const HomeScreen: React.FC<{ navigation: any }> = ({ navigation }) => {
   const [showLike, setShowLike] = useState(false);
   const [showNope, setShowNope] = useState(false);
   const [index, setIndex] = useState(0);
+  const [startTime, setStartTime] = useState<number | null>(null);
 
-  const handleSwipedLeft = (cardIndex) => {
-    console.log('Swiped left:', cardIndex);
+  // Track the time when a card is displayed
+  useEffect(() => {
+    if (index < users.length) {
+      setStartTime(Date.now());
+    }
+  }, [index]);
+
+  const handleSwipedLeft = (cardIndex: number) => {
+    const timeSpent = Date.now() - (startTime ?? Date.now());
+    console.log('Swiped left:', cardIndex, 'Time spent on card:', timeSpent, 'ms');
+
     setShowNope(true);
     setTimeout(() => {
       setShowNope(false);
     }, 500); // Show the nope image for 0.5 seconds
   };
 
-  const handleSwipedRight = (cardIndex) => {
-    console.log('Swiped right:', cardIndex);
+  const handleSwipedRight = (cardIndex: number) => {
+    const timeSpent = Date.now() - (startTime ?? Date.now());
+    console.log('Swiped right:', cardIndex, 'Time spent on card:', timeSpent);
+
     setShowLike(true);
     setTimeout(() => {
       setShowLike(false);
@@ -59,34 +71,33 @@ export default function HomeScreen({ navigation }) {
         cardIndex={index}
         backgroundColor={'#ffffff'}
         stackSize={3}
-        marginBottom= {20}
+        marginBottom={20}
         animateCardOpacity={true}
         verticalSwipe={false}
       />
       {showLike && (
-        <Animated.Image 
-          source={Like} 
-          style={[styles.like]} 
-          resizeMode="contain" 
+        <Animated.Image
+          source={Like}
+          style={[styles.like]}
+          resizeMode="contain"
         />
       )}
       {showNope && (
-        <Animated.Image 
-          source={Nope} 
-          style={[styles.nope]} 
-          resizeMode="contain" 
+        <Animated.Image
+          source={Nope}
+          style={[styles.nope]}
+          resizeMode="contain"
         />
       )}
     </View>
   );
-}
+};
 
 const styles = StyleSheet.create({
   pageContainer: {
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
-
   },
   image: {
     width: "100%",
@@ -100,7 +111,6 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     borderWidth: 2,
     borderColor: "#E8E8E8",
-    // justifyContent: "center",
     backgroundColor: "white",
     shadowColor: "#000000",
     shadowOffset: {
@@ -110,7 +120,6 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.36,
     shadowRadius: 11.78,
     elevation: 15,
-   
   },
   cardInner: {
     padding: 10,
@@ -145,3 +154,5 @@ const styles = StyleSheet.create({
     zIndex: 1000, // Ensure the nope image appears above other elements
   },
 });
+
+export default HomeScreen;
