@@ -1,7 +1,32 @@
-import React from 'react';
-import { View, Text, StyleSheet, Image } from 'react-native';
+import React , { useEffect, useState }from 'react';
+import { View, Text, StyleSheet, Image, Button} from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useLogto } from '@logto/rn';
+import {useNavigation} from '@react-navigation/native';
+
 
 const ProfileScreen = () => {
+  const { signIn, signOut, isAuthenticated, fetchUserInfo } = useLogto();
+  const [user, setUser] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const navigation = useNavigation();
+
+  const handleSignOut = async () => {
+    setLoading(true);
+    try {
+      await signOut();
+      await AsyncStorage.removeItem('user');
+      setUser(null);
+      navigation.navigate('SignIn');
+
+    } catch (error) {
+      console.error(error);
+    } finally {
+      setLoading(false);
+    }
+
+  };
+
   return (
     <View style={styles.container}>
       <Image
@@ -18,6 +43,9 @@ const ProfileScreen = () => {
         <Text style={styles.infoTitle}>Favorite Cuisine</Text>
         <Text style={styles.infoText}>Italian, Chinese</Text>
       </View>
+
+      <Button title="Sign out" onPress={handleSignOut} />
+
     </View>
   );
 };
