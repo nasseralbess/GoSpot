@@ -125,9 +125,9 @@ def update_user_coordinates():
 # Not working
 @normal_route.route('/get-next-spot', methods=['GET'])
 def get_next_spot():
-    print("\n\n Here \n\n")
+    #print("\n\n Here \n\n")
     user_id = request.args.get('user_id')
-    print("user_id:",user_id)
+    #print("user_id:",user_id)
     next_spot = get_next_items(user_id)
     db = current_app.config['db']
     user = db['User']
@@ -158,3 +158,24 @@ def get_next_group_spot():
         return jsonify(group_spot.to_dict()), 200
     else:
         return jsonify({'message': 'No group spot available'}), 404
+    
+@normal_route.route('/add-friend', methods=['POST'])
+def add_friend():
+    print("request sent")
+    data = request.json
+    user_id = data.get('user_id')
+    friend_id = data.get('friend_id')
+
+    db = current_app.config['db']
+    user = db['User']
+
+    user.update_one(
+        {'_id': user_id},
+        {
+            '$addToSet': {
+                'friends': friend_id
+            }
+        }
+    )
+
+    return jsonify({'message': f"Friend {friend_id} added for user {user_id}"}), 200
