@@ -191,23 +191,23 @@ def get_next_group_spot():
     else:
         return jsonify({'message': 'No group spot available'}), 404
     
-@normal_route.route('/add-friend', methods=['POST'])
-def add_friend():
-    print("request sent")
-    data = request.json
-    user_id = data.get('user_id')
-    friend_id = data.get('friend_id')
+# @normal_route.route('/add-friend', methods=['POST'])
+# def add_friend():
+#     print("request sent")
+#     data = request.json
+#     user_id = data.get('user_id')
+#     friend_id = data.get('friend_id')
 
-    db = current_app.config['db']
-    user = db['User']
+#     db = current_app.config['db']
+#     user = db['User']
 
-    user.update_one(
-        {'_id': user_id},
-        {
-            '$addToSet': {
-                'friends': friend_id
-            }
-        }
-    )
+#     user.update_one(
+#         {'_id': user_id},
+#         {
+#             '$addToSet': {
+#                 'friends': friend_id
+#             }
+#         }
+#     )
 
-    return jsonify({'message': f"Friend {friend_id} added for user {user_id}"}), 200
+#     return jsonify({'message': f"Friend {friend_id} added for user {user_id}"}), 200
