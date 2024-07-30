@@ -56,6 +56,9 @@ def update_user_preferences():
         return jsonify({'message': f"Preferences updated for user {user_id}"}), 200
     else:
         return jsonify({'error': 'User not found or no changes made'}), 404
+
+
+    
 # Works fine but you have to put into batches 
 @normal_route.route('/record-interaction', methods=['POST'])
 def record_spot_interaction():
@@ -63,7 +66,7 @@ def record_spot_interaction():
     user_id = data.get('user_id')
     # spot_id = data.get('spot_id')
     interactions = data.get('interaction')
-
+    
     db = current_app.config['db']
     user = db['User']
 
@@ -97,6 +100,7 @@ def record_spot_interaction():
     else:
         return jsonify({'error': 'User not found or no changes made'}), 404
 
+# Updating coordinates 
 @normal_route.route('/update-coordinates', methods=['PUT'])
 def update_user_coordinates():
     data = request.json
@@ -122,7 +126,35 @@ def update_user_coordinates():
         return jsonify({'error': 'User not found or no changes made'}), 404
 
 
-# Not working
+@normal_route.route('/add-friend', methods=['POST'])
+def add_following():
+    db = current_app.config['db']
+    user = db['User']
+
+    user_to_add = request.args.get('friend')
+    current_user = request.args.get('user')
+
+    if not user_to_add or not current_user:
+        return jsonify({'error': 'User and friend information must be provided'}), 400
+
+    
+    result = user.update_one(
+        {'_id': int(current_user)},
+        {
+            '$push': {
+                'friends': int(user_to_add)
+            }
+        }
+    )
+
+    if result.modified_count:
+        return jsonify({'message': f"Added friend for user {current_user}"}), 200
+    else:
+        return jsonify({'error': 'User not found or no changes made'}), 404
+
+
+
+# Not working for string ids 
 @normal_route.route('/get-next-spot', methods=['GET'])
 def get_next_spot():
     #print("\n\n Here \n\n")
