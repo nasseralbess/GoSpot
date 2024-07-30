@@ -127,7 +127,7 @@ def update_user_coordinates():
 
 
 @normal_route.route('/add-friend', methods=['POST'])
-def add_following():
+def add_friend():
     db = current_app.config['db']
     user = db['User']
 
