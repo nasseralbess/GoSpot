@@ -1,0 +1,10 @@
+Setting up virtual environment, you dont have to do this but I mean why not 
+python3 -m venv path/to/venv
+
+ACTIVATION 
+source path/to/venv/bin/activate
+
+then install the requirenments by 
+python3 -m pip install -r requirements.txt
+
+
