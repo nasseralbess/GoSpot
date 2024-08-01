@@ -2,14 +2,28 @@ from flask import Blueprint, request, jsonify, current_app
 from bson import ObjectId
 from datetime import datetime
 from helpers import get_next_items, get_group_recommendation
+from schemas.user_schema import UserInteractionSchema, UserSchema, UpdatePreferencesSchema
 
+# Initialistion 
 normal_route = Blueprint('normal_routes', __name__)
 
+# Schemas 
+user_interaction_schema = UserInteractionSchema()
+adding_user_schema = UserSchema()
+updating_preferences = UpdatePreferencesSchema()
+
 # Adds a user, and fail if user already exists
-# Works perfectly fine 
+# Works perfectly fine, Validation works 
 @normal_route.route('/add-user', methods=['POST'])
 def add_new_user():
     data = request.json
+
+    errors = adding_user_schema.validate(data)
+    
+    if errors:
+        return jsonify(errors), 400
+
+
     db = current_app.config['db']
     user = db['User']
 
@@ -33,9 +47,16 @@ def add_new_user():
     return jsonify({'message': f"New user {user_id} added successfully"}), 201
 
 # Works perfectly fine 
+# Updates the entire preferences
 @normal_route.route('/update-preferences', methods=['PUT'])
 def update_user_preferences():
     data = request.json
+
+    errors = updating_preferences.validate(data)
+
+    if errors:
+        return jsonify(errors), 400
+
     user_id = data.get('user_id')
     new_preferences = data.get('new_preferences')
 
@@ -59,27 +80,26 @@ def update_user_preferences():
 
 
     
-# Works fine but you have to put into batches 
+# Validation good 
+# Recording interactions of places for users 
 @normal_route.route('/record-interaction', methods=['POST'])
 def record_spot_interaction():
     data = request.json
+
+    # Data validation
+    errors = user_interaction_schema.validate(data)
+    if errors:
+        return jsonify({
+            "message": "Data Structure Invalid, please ensure data structure is correct",
+            "errors": (errors)
+        }), 400
+    
     user_id = data.get('user_id')
     # spot_id = data.get('spot_id')
     interactions = data.get('interaction')
     
     db = current_app.config['db']
     user = db['User']
-
-    # result = user.update_one(
-    #     {'_id': user_id},
-    #     {
-    #         '$set': {
-    #             f'location_specific.{spot_id}': interaction,
-    #             'last_active': datetime.now()
-    #         }
-    #     }
-    # )
-
 
     update_data = {
         '$set': {
@@ -101,6 +121,7 @@ def record_spot_interaction():
         return jsonify({'error': 'User not found or no changes made'}), 404
 
 # Updating coordinates 
+# This could be redundant, as you can update coordinates in the update preferences
 @normal_route.route('/update-coordinates', methods=['PUT'])
 def update_user_coordinates():
     data = request.json
@@ -125,19 +146,29 @@ def update_user_coordinates():
     else:
         return jsonify({'error': 'User not found or no changes made'}), 404
 
-
+# Adding a new friend 
+# Additional validation where it checks if both users exists 
 @normal_route.route('/add-friend', methods=['POST'])
 def add_friend():
     db = current_app.config['db']
     user = db['User']
 
     user_to_add = request.args.get('friend')
+    
     current_user = request.args.get('user')
 
     if not user_to_add or not current_user:
         return jsonify({'error': 'User and friend information must be provided'}), 400
 
+    # Check if users exists in the database
+     # Check if both users exist in the database
+    if not user.find_one({'_id': int(current_user)}):
+        return jsonify({'error': f'User {current_user} does not exist'}), 404
     
+    if not user.find_one({'_id': int(user_to_add)}):
+        return jsonify({'error': f'Friend {user_to_add} does not exist'}), 404
+
+
     result = user.update_one(
         {'_id': int(current_user)},
         {
@@ -180,6 +211,7 @@ def get_next_spot():
             return jsonify(next_spot.to_dict()), 200
     
     return jsonify({'message': 'No more spots available'}), 404
+
 
 @normal_route.route('/get-group-spot', methods=['GET'])
 def get_next_group_spot():
