@@ -17,7 +17,20 @@ const HomeScreen: React.FC<{ navigation: any }> = ({ navigation }) => {
     if (index < users.length) {
       setStartTime(Date.now());
     }
+    fetchData()
   }, [index]);
+
+  const fetchData = async() => {
+    try {
+      // This works, but Llabadi if you are running it,you need to find out your computer's ip adress, and replace http://127.0.0.1:5000/ with ur ip adress
+      const response = await fetch('http://127.0.0.1:5000/user/get-next-spot?user_id=2');
+      const data = await response.json();
+      console.log(data);
+    } catch (error) {
+      console.error('Error fetching data:', error);
+    }
+  }
+
 
   const handleSwipedLeft = (cardIndex: number) => {
     const timeSpent = Date.now() - (startTime ?? Date.now());
