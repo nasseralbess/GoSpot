@@ -1,7 +1,7 @@
 from flask import Blueprint, request, jsonify, current_app
 from bson import ObjectId
 from datetime import datetime
-from helpers import get_next_items, get_group_recommendation
+from helpers import *
 from schemas.user_schema import UserInteractionSchema, UserSchema, UpdatePreferencesSchema
 
 # Initialistion 
@@ -44,6 +44,12 @@ def add_new_user():
     }
 
     user.insert_one(new_user)
+    user_vector = get_user_profile(user_id, get_tfidf(), get_coordinate_scaler())
+    vector_db = db['UserVector']
+    vector_db.insert_one({
+        '_id': user_id,
+        'vector': user_vector.tolist()
+    })
     return jsonify({'message': f"New user {user_id} added successfully"}), 201
 
 # Works perfectly fine 
@@ -198,17 +204,17 @@ def get_next_spot():
         user_id = int(user_id)
     except:
         pass
-    # print("\n\n\n\n\n\n")
-    # print("Bread:",type(user_id))
-    # print("\n\n Db:",db)   
-    # print("\n\n\nfind_one:",user.find_one({'_id': 1}))
+
+    ret = []
     seen = list(user.find_one({'_id': user_id}).get('location_specific', {}).keys())
-    # print("\n\n\n\n\n\n")
     if next_spot is None:
         return jsonify({'message': 'No more spots available'}), 404
-    for spot in next_spot:
-        if spot not in seen:
-            return jsonify(next_spot.to_dict()), 200
+    for idx,spot in next_spot.iterrows():
+        if spot['id'] not in seen:
+            # return jsonify(next_spot.to_dict()), 200
+            ret.append(spot['id'])
+    if ret:
+        return jsonify(ret), 200
     
     return jsonify({'message': 'No more spots available'}), 404
 
