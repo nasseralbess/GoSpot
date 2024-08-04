@@ -66,18 +66,18 @@ for key,value in data.items():
     
 initial_weights = pd.DataFrame(vals,columns=[key for key in data[index[0]].keys()],index=index)
 
-with open('Updating_datasets/spot_details.json', 'r') as file:
-    spot_details = json.load(file)
-index,vals = [],[]
-# print(spot_details)
-for key,value in spot_details.items():
-    index.append(key)
-    vals.append([val for val in value.values()])
+# with open('Updating_datasets/spot_details.json', 'r') as file:
+#     spot_details = json.load(file)
+# index,vals = [],[]
+# # print(spot_details)
+# for key,value in spot_details.items():
+#     index.append(key)
+#     vals.append([val for val in value.values()])
 # print(len(vals),len(index))
 
-spot_details = pd.DataFrame(vals,columns=[key for key in spot_details[index[0]].keys()],index=index)
-spot_details = spot_details.copy().reset_index()
-spot_details.rename(columns={'index': 'id'}, inplace=True)
+# spot_details = pd.DataFrame(vals,columns=[key for key in spot_details[index[0]].keys()],index=index)
+# spot_details = spot_details.copy().reset_index()
+# spot_details.rename(columns={'index': 'id'}, inplace=True)
 user_preferences = {}
 
 def preprocess_data(initial_weights):
@@ -142,7 +142,7 @@ def create_app():
     app.config['features'] = features
     app.config['reverse_category_mapping'] = reverse_category_mapping
     app.config['db'] = db
-    app.config['spot_details'] = spot_details
+    # app.config['spot_details'] = spot_details
     #app.config['item_similarity'] = item_similarity
 
     app.register_blueprint(normal_route, url_prefix='/user')

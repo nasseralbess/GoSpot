@@ -22,8 +22,8 @@ def get_df():
 def get_coordinate_scaler():
     return current_app.config['coordinate_scaler']
 
-def get_spot_details():
-    return current_app.config['spot_details']
+# def get_spot_details():
+#     return current_app.config['spot_details']
 # def get_item_similarity():
 #     return current_app.config['item_similarity']
 
@@ -118,8 +118,7 @@ def popular_items_recommend(n):
     scores = df['review_count'] * df['rating'].fillna(0)
     top_indices = scores.argsort()[-n:][::-1]
     recommended_ids = df.iloc[top_indices]['id'].tolist()
-    spot_details = get_spot_details()
-    return spot_details[spot_details['id'].isin(recommended_ids)][['id', 'name', 'image_url', 'phone']]
+    return recommended_ids
 
 
 def user_based_recommend(user_id, n):
@@ -128,7 +127,7 @@ def user_based_recommend(user_id, n):
     features = get_features()
     df = get_df()
     tfidf = get_tfidf()
-    spot_details = get_spot_details()
+    # spot_details = get_spot_details()
     coordinate_scaler = get_coordinate_scaler()
     if user_id not in user.distinct('_id'):
         # New user: use a fallback method (e.g., popular items)
@@ -140,7 +139,7 @@ def user_based_recommend(user_id, n):
     top_indices = scores.argsort()[-n:][::-1]
     recommended_ids = df.iloc[top_indices]['id'].tolist()
     
-    return spot_details[spot_details['id'].isin(recommended_ids)][['id', 'name', 'image_url', 'phone']]
+    return recommended_ids
 
 
 # def item_based_recommend(base_items, n):
@@ -169,22 +168,22 @@ def group_based_recommend(user_ids, n=10):
     features = get_features()
     df = get_df()
     tfidf = get_tfidf()
-    spot_details = get_spot_details()
+    # spot_details = get_spot_details()
     coordinate_scaler = get_coordinate_scaler()
     group_profile = get_group_profile(user_ids, tfidf, coordinate_scaler)
     scores = cosine_similarity([group_profile], features)[0]
     
     top_indices = scores.argsort()[-n:][::-1]
     recommended_ids = df.iloc[top_indices]['id'].tolist()
-    
-    return spot_details[spot_details['id'].isin(recommended_ids)][['id', 'name', 'image_url', 'phone']]
+    return recommended_ids
+    # return spot_details[spot_details['id'].isin(recommended_ids)][['id', 'name', 'image_url', 'phone']]
 
 def least_misery_group_recommend(user_ids, n=10):
     individual_scores = []
     features = get_features()
     df = get_df()
     tfidf = get_tfidf()
-    spot_details = get_spot_details()
+    # spot_details = get_spot_details()
     coordinate_scaler = get_coordinate_scaler()
     for user_id in user_ids:
         user_profile = get_user_profile(user_id, tfidf, coordinate_scaler)
@@ -197,16 +196,14 @@ def least_misery_group_recommend(user_ids, n=10):
     top_indices = group_scores.argsort()[-n:][::-1]
     recommended_ids = df.iloc[top_indices]['id'].tolist()
     
-    return spot_details[spot_details['id'].isin(recommended_ids)][['id', 'name', 'image_url', 'phone']]
-
-    return None
+    return recommended_ids
 
 def get_group_recommendation(user_ids):
     # You could alternate between different group recommendation strategies
     strategies = [group_based_recommend, least_misery_group_recommend]
     strategy = random.choice(strategies)
     
-    recommendations = strategy(user_ids, n=1)
+    recommendations = strategy(user_ids, n=10)
     if not recommendations.empty:
         return recommendations.iloc[0]
     else:

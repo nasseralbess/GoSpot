@@ -209,10 +209,10 @@ def get_next_spot():
     seen = list(user.find_one({'_id': user_id}).get('location_specific', {}).keys())
     if next_spot is None:
         return jsonify({'message': 'No more spots available'}), 404
-    for idx,spot in next_spot.iterrows():
-        if spot['id'] not in seen:
+    for id in next_spot:
+        if id not in seen:
             # return jsonify(next_spot.to_dict()), 200
-            ret.append(spot['id'])
+            ret.append(id)
     if ret:
         return jsonify(ret), 200
     
