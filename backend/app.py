@@ -117,7 +117,16 @@ def create_feature_matrix(df):
     
     return features, tfidf, scaler
 
-
+def calculate_similarity_in_chunks(features, chunk_size=1000):
+    n = features.shape[0]
+    similarity_matrix = []
+    
+    for start in range(0, n, chunk_size):
+        end = min(start + chunk_size, n)
+        chunk_sim = cosine_similarity(features[start:end], features)
+        similarity_matrix.append(chunk_sim)
+        
+    return csr_matrix(np.vstack(similarity_matrix))
 
 
 def create_app():
@@ -135,6 +144,8 @@ def create_app():
     # item_similarity = cosine_similarity(features_sparse, dense_output=False)
     #item_similarity = cosine_similarity(features)
 
+
+    item_similarity = calculate_similarity_in_chunks(features)
     #app.config['item_similarity'] = item_similarity
     app.config['df'] = df
     app.config['tfidf'] = tfidf
@@ -142,6 +153,7 @@ def create_app():
     app.config['features'] = features
     app.config['reverse_category_mapping'] = reverse_category_mapping
     app.config['db'] = db
+    app.config['item_similarity'] = item_similarity
     # app.config['spot_details'] = spot_details
     #app.config['item_similarity'] = item_similarity
 

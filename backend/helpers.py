@@ -24,8 +24,8 @@ def get_coordinate_scaler():
 
 # def get_spot_details():
 #     return current_app.config['spot_details']
-# def get_item_similarity():
-#     return current_app.config['item_similarity']
+def get_item_similarity():
+    return current_app.config['item_similarity']
 
 def get_user_profile(user_id, tfidf, coordinate_scaler):
     db = get_db()
@@ -142,27 +142,26 @@ def user_based_recommend(user_id, n):
     return recommended_ids
 
 
-# def item_based_recommend(base_items, n):
-#     df = get_df()
-#     item_similarity = get_item_similarity()
-#     spot_details = get_spot_details()
-#     base_indices = df[df['id'].isin(base_items['id'])].index
+def item_based_recommend(base_items, n):
+    df = get_df()
+    item_similarity = get_item_similarity()
+    base_indices = df[df['id'].isin(base_items)].index
     
-#     similar_items = set()
-#     for idx in base_indices:
-#         # Get top similar items for each base item
-#         similar_indices = item_similarity[idx].argsort()[-n:][::-1]
-#         similar_items.update(df.iloc[similar_indices]['id'].tolist())
+    similar_items = set()
+    for idx in base_indices:
+        # Convert sparse row to dense array for argsort
+        similar_indices = item_similarity[idx].toarray().flatten().argsort()[-n:][::-1]
+        similar_items.update(df.iloc[similar_indices]['id'].tolist())
     
-#     # Remove base items from similar items
-#     similar_items = list(similar_items - set(base_items['id']))
+    # Remove base items from similar items
+    similar_items = list(similar_items - set(base_items))
     
-#     # If we don't have enough similar items, pad with popular items
-#     if len(similar_items) < n:
-#         popular = popular_items_recommend(n - len(similar_items))
-#         similar_items.extend(popular['id'].tolist())
-    
-#     return spot_details[spot_details['id'].isin(similar_items[:n])][['id', 'name', 'image_url', 'phone']]
+    # If we don't have enough similar items, pad with popular items
+    if len(similar_items) < n:
+        popular = popular_items_recommend(n - len(similar_items))
+        similar_items.extend(popular['id'].tolist())
+    return similar_items[:n]
+
 
 def group_based_recommend(user_ids, n=10):
     features = get_features()
@@ -214,14 +213,14 @@ def get_next_items(user_id, n=10):
     n = n if n % 2 == 0 else n + 1
     
     # Get n/2 recommendations based on user profile
-    user_based_recommendations = user_based_recommend(user_id, n)#n // 2)
+    user_based_recommendations = user_based_recommend(user_id, n // 2)
     
     # Get n/2 recommendations based on item similarity to the user-based recommendations
-    #item_based_recommendations = item_based_recommend(user_based_recommendations, n // 2)
+    item_based_recommendations = item_based_recommend(user_based_recommendations, n // 2)
     
     # Combine and shuffle the recommendations
-    #all_recommendations = pd.concat([user_based_recommendations, item_based_recommendations])
-    # all_recommendations.sample(n=len(all_recommendations))
-    # return all_recommendations
-    return user_based_recommendations
+    all_recommendations = user_based_recommendations + item_based_recommendations
+    random.shuffle(all_recommendations)
+    return all_recommendations
+
 

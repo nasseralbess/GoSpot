@@ -194,12 +194,11 @@ def update_user_coordinates():
 # Not working for string ids 
 @normal_route.route('/get-next-spot', methods=['GET'])
 def get_next_spot():
-    #print("\n\n Here \n\n")
     user_id = request.args.get('user_id')
-    #print("user_id:",user_id)
     next_spot = get_next_items(user_id)
     db = current_app.config['db']
     user = db['User']
+    
     try:
         user_id = int(user_id)
     except:
@@ -207,12 +206,14 @@ def get_next_spot():
 
     ret = []
     seen = list(user.find_one({'_id': user_id}).get('location_specific', {}).keys())
-    if next_spot is None:
+    
+    if not next_spot:
         return jsonify({'message': 'No more spots available'}), 404
+    
     for id in next_spot:
         if id not in seen:
-            # return jsonify(next_spot.to_dict()), 200
             ret.append(id)
+    
     if ret:
         return jsonify(ret), 200
     
