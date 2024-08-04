@@ -36,7 +36,7 @@ def add_new_user():
         '_id': user_id,
         'general_preferences': data.get('general_preferences'),
         'location_specific': {},
-        'friends': [],
+        'groups': [],
         'name': data.get('name'),
         'password': data.get('password'),
         'age': data.get('age'),
@@ -154,40 +154,40 @@ def update_user_coordinates():
 
 # Adding a new friend 
 # Additional validation where it checks if both users exists 
-@normal_route.route('/add-friend', methods=['POST'])
-def add_friend():
-    db = current_app.config['db']
-    user = db['User']
+# @normal_route.route('/add-friend', methods=['POST'])
+# def add_friend():
+#     db = current_app.config['db']
+#     user = db['User']
 
-    user_to_add = request.args.get('friend')
+#     user_to_add = request.args.get('friend')
     
-    current_user = request.args.get('user')
+#     current_user = request.args.get('user')
 
-    if not user_to_add or not current_user:
-        return jsonify({'error': 'User and friend information must be provided'}), 400
+#     if not user_to_add or not current_user:
+#         return jsonify({'error': 'User and friend information must be provided'}), 400
 
-    # Check if users exists in the database
-     # Check if both users exist in the database
-    if not user.find_one({'_id': int(current_user)}):
-        return jsonify({'error': f'User {current_user} does not exist'}), 404
+#     # Check if users exists in the database
+#      # Check if both users exist in the database
+#     if not user.find_one({'_id': int(current_user)}):
+#         return jsonify({'error': f'User {current_user} does not exist'}), 404
     
-    if not user.find_one({'_id': int(user_to_add)}):
-        return jsonify({'error': f'Friend {user_to_add} does not exist'}), 404
+#     if not user.find_one({'_id': int(user_to_add)}):
+#         return jsonify({'error': f'Friend {user_to_add} does not exist'}), 404
 
 
-    result = user.update_one(
-        {'_id': int(current_user)},
-        {
-            '$push': {
-                'friends': int(user_to_add)
-            }
-        }
-    )
+#     result = user.update_one(
+#         {'_id': int(current_user)},
+#         {
+#             '$push': {
+#                 'friends': int(user_to_add)
+#             }
+#         }
+#     )
 
-    if result.modified_count:
-        return jsonify({'message': f"Added friend for user {current_user}"}), 200
-    else:
-        return jsonify({'error': 'User not found or no changes made'}), 404
+#     if result.modified_count:
+#         return jsonify({'message': f"Added friend for user {current_user}"}), 200
+#     else:
+#         return jsonify({'error': 'User not found or no changes made'}), 404
 
 
 
@@ -228,7 +228,38 @@ def get_next_group_spot():
         return jsonify(group_spot.to_dict()), 200
     else:
         return jsonify({'message': 'No group spot available'}), 404
-    
+
+
+@normal_route.route('/create-group', methods=['POST'])
+def create_group():
+    data = request.json
+    group_id = data.get('group_id')
+    groups = current_app.config['db']['Group']
+    groups.insert_one({
+        '_id': group_id,
+        'members': [data.get('creator')]
+    })
+    return jsonify({'group created': group_id}), 200
+
+@normal_route.route('/add-to-group', methods=['POST'])
+def add_to_group():
+    data = request.json
+    group_id = data.get('group_id')
+    user_id = data.get('user_id')
+    groups = current_app.config['db']['Group']
+    groups.update_one(
+        {'_id': group_id},
+        {
+            '$addToSet': {
+                'members': user_id
+            }
+        }
+    )
+    return jsonify({'message': f"User {user_id} added to group {group_id}"}), 200
+
+
+
+
 # @normal_route.route('/add-friend', methods=['POST'])
 # def add_friend():
 #     print("request sent")
