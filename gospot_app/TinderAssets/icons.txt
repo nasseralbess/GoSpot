@@ -1,0 +1,12 @@
+Top icons:
+<Fontisto name="tinder" size={24} color={color} />
+<MaterialCommunityIcons name="star-four-points" size={24} color={color} />
+<Ionicons name="ios-chatbubbles" size={24} color={color} />
+<FontAwesome name="user" size={24} color={color} />
+
+Bottom icons:
+<FontAwesome name="undo" size={24} color="#FBD88B" />
+<Entypo name="cross" size={24} color="#F76C6B" />
+<FontAwesome name="star" size={24} color="#3AB4CC" />
+<FontAwesome name="heart" size={24} color="#4FCC94" />
+<Ionicons name="flash" size={24} color="#A65CD2" />
