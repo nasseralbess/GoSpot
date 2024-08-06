@@ -3,7 +3,6 @@ import { StyleSheet, View, Text, ImageBackground } from 'react-native';
 import Swiper from 'react-native-deck-swiper';
 import Like from "../../../TinderAssets/images/LIKE.png";
 import Nope from "../../../TinderAssets/images/nope.png";
-import users from "../../../TinderAssets/data/users";
 import Animated from 'react-native-reanimated';
 
 const HomeScreen: React.FC<{ navigation: any }> = ({ navigation }) => {
@@ -11,26 +10,54 @@ const HomeScreen: React.FC<{ navigation: any }> = ({ navigation }) => {
   const [showNope, setShowNope] = useState(false);
   const [index, setIndex] = useState(0);
   const [startTime, setStartTime] = useState<number | null>(null);
+  const [cards, setCards] = useState<any[]>([]);
+  const [swiperKey, setSwiperKey] = useState(0);
 
-  // Track the time when a card is displayed
   useEffect(() => {
-    if (index < users.length) {
+    fetchDataFirst();
+   
+  }, []);
+
+  useEffect(() => {
+    if (index < cards.length) {
       setStartTime(Date.now());
     }
-    fetchData()
-  }, [index]);
+  }, [index, cards]);
 
-  const fetchData = async() => {
+  const fetchDataFirst = async () => {
     try {
-      // This works, but Llabadi if you are running it,you need to find out your computer's ip adress, and replace http://127.0.0.1:5000/ with ur ip adress
       const response = await fetch('http://127.0.0.1:5000/user/get-next-spot?user_id=2');
-      const data = await response.json();
-      console.log(data);
+      const data: any[] = await response.json();
+      const convertedData = data.map((item, index) => ({
+        id: (index + 1).toString(),
+        name: item.name,
+        image: item.image_url,
+        bio: item.display_phone ? `Contact: ${item.display_phone}` : 'No contact information available',
+      }));
+      
+      console.log(convertedData);
+      setCards(convertedData);
+    } catch (error) {
+      console.error('Error fetching data:', error);
+    }
+  };
+
+  const fetchingData = async () => {
+    try {
+      const response = await fetch('http://127.0.0.1:5000/user/get-next-spot?user_id=2');
+      const data: any[] = await response.json();
+      const convertedData = data.map((item, index) => ({
+        id: (index + 1).toString(),
+        name: item.name,
+        image: item.image_url,
+        bio: item.display_phone ? `Contact: ${item.display_phone}` : 'No contact information available',
+      }));
+      
+      return convertedData
     } catch (error) {
       console.error('Error fetching data:', error);
     }
   }
-
 
   const handleSwipedLeft = (cardIndex: number) => {
     const timeSpent = Date.now() - (startTime ?? Date.now());
@@ -52,22 +79,39 @@ const HomeScreen: React.FC<{ navigation: any }> = ({ navigation }) => {
     }, 500); // Show the like image for 0.5 seconds
 
     // Navigate to DetailScreen
-    navigation.navigate('Details', { user: users[cardIndex] });
+    navigation.navigate('Details', { user: cards[cardIndex] });
   };
+
+  const handleSwipedAll = async () => {
+    console.log('All cards swiped');
+    const newCards =  await fetchingData();
+    setCards(newCards)
+    console.log(newCards)
+    setIndex(0); // Reset the index to loop the cards
+    setSwiperKey((prevKey) => prevKey + 1);
+  }
+
+  let DEFAULT_IMAGE_URL = "https://t3.ftcdn.net/jpg/02/79/75/74/360_F_279757406_PjHAMPHNAEyf5NvyEYlC7mJNRKHHkmCz.jpg";
 
   return (
     <View style={styles.pageContainer}>
       <Swiper
-        cards={users}
-        renderCard={(user) => (
-          <View style={styles.card}>
-            <ImageBackground source={{ uri: user.image }} style={styles.image}>
-              <View style={styles.cardInner}>
-                <Text style={styles.name}>{user.name}</Text>
-                <Text style={styles.bio}>{user.bio}</Text>
-              </View>
-            </ImageBackground>
-          </View>
+        cards={cards}
+        key={swiperKey} // Force rerender when cards change
+        renderCard={(card) => (
+          card ? (
+            <View style={styles.card}>
+              <ImageBackground
+                source={{ uri: card.image || DEFAULT_IMAGE_URL }}
+                style={styles.image}
+              >
+                <View style={styles.cardInner}>
+                  <Text style={styles.name}> {card.name} </Text>
+                  <Text style={styles.bio}> {card.bio} </Text>
+                </View>
+              </ImageBackground>
+            </View>
+          ) : null
         )}
         onSwipedLeft={(cardIndex) => {
           handleSwipedLeft(cardIndex);
@@ -77,10 +121,8 @@ const HomeScreen: React.FC<{ navigation: any }> = ({ navigation }) => {
           handleSwipedRight(cardIndex);
           setIndex(cardIndex + 1);
         }}
-        onSwipedAll={() => {
-          console.log('All cards swiped');
-          setIndex(0); // Reset the index to loop the cards
-        }}
+        onSwipedAll={handleSwipedAll}
+        
         cardIndex={index}
         backgroundColor={'#ffffff'}
         stackSize={3}
