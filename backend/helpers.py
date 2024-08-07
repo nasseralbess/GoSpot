@@ -3,6 +3,7 @@ import numpy as np
 from sklearn.metrics.pairwise import cosine_similarity
 import pandas as pd
 import random
+from annoy import AnnoyIndex
 
 def get_db():
     return current_app.config['db']
@@ -24,9 +25,12 @@ def get_coordinate_scaler():
 
 # def get_spot_details():
 #     return current_app.config['spot_details']
-def get_item_similarity():
-    return current_app.config['item_similarity']
-
+def get_annoy_index():
+    features = current_app.config['features']
+    f = features.shape[1]
+    annoy_index = AnnoyIndex(f, 'angular')
+    annoy_index.load(current_app.config['annoy_index_path'])
+    return annoy_index
 def get_user_profile(user_id, tfidf, coordinate_scaler):
     db = get_db()
     user = db['User']
@@ -144,16 +148,15 @@ def user_based_recommend(user_id, n):
 
 def item_based_recommend(base_items, n):
     df = get_df()
-    item_similarity = get_item_similarity()
+    annoy_index = get_annoy_index()
+    
     base_indices = df[df['id'].isin(base_items)].index
     
     similar_items = set()
     for idx in base_indices:
-        # Convert sparse row to dense array for argsort
-        similar_indices = item_similarity[idx].toarray().flatten().argsort()[-n:][::-1]
+        similar_indices = annoy_index.get_nns_by_item(idx, n)
         similar_items.update(df.iloc[similar_indices]['id'].tolist())
     
-    # Remove base items from similar items
     similar_items = list(similar_items - set(base_items))
     
     # If we don't have enough similar items, pad with popular items

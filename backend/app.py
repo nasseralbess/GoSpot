@@ -16,6 +16,7 @@ from sklearn.metrics.pairwise import cosine_similarity
 # ONLY FOR TESTING PURPOSES 
 # from flask_wtf.csrf import CSRFProtect
 from scipy.sparse import csr_matrix
+from annoy import AnnoyIndex
 
 category_mapping = {
     'American': ['American', 'New American', 'Southern', 'Soul Food', 'Cajun/Creole', 'Tex-Mex'],
@@ -117,55 +118,90 @@ def create_feature_matrix(df):
     
     return features, tfidf, scaler
 
-def calculate_similarity_in_chunks(features, chunk_size=1000):
-    n = features.shape[0]
-    similarity_matrix = []
-    
-    for start in range(0, n, chunk_size):
-        end = min(start + chunk_size, n)
-        chunk_sim = cosine_similarity(features[start:end], features)
-        similarity_matrix.append(chunk_sim)
+def build_annoy_index(features, n_trees=5, max_items=100):
+    print(f"Building Annoy index with {features.shape[1]} dimensions...")
+    f = features.shape[1]
+    t = AnnoyIndex(f, 'angular')
+    try:
+        for i in range(min(features.shape[0], max_items)):
+            print(f"Adding item {i} to the index")
+            t.add_item(i, features[i])
+        print(f"Added {min(features.shape[0], max_items)} items to the index")
         
-    return csr_matrix(np.vstack(similarity_matrix))
+        print(f"Starting to build index with {n_trees} trees...")
+        t.build(n_trees)
+        print(f"Built index with {n_trees} trees")
+    except Exception as e:
+        print(f"Error in build_annoy_index: {str(e)}")
+        import traceback
+        traceback.print_exc()
+        raise
+    return t
 
+def create_and_save_annoy_index(df):
+    print("Starting create_feature_matrix...")
+    features, tfidf, scaler = create_feature_matrix(df)
+    print(f"Feature matrix created. Shape: {features.shape}")
+    
+    print("Building Annoy index...")
+    annoy_index = build_annoy_index(features)
+    print("Annoy index built successfully")
+    
+    print("Saving Annoy index...")
+    try:
+        annoy_index.save('item_similarity.ann')
+        print("Annoy index saved successfully")
+    except Exception as e:
+        print(f"Error saving Annoy index: {str(e)}")
+        # Try saving to a different location
+        try:
+            annoy_index.save('C:/temp/item_similarity.ann')
+            print("Annoy index saved successfully to C:/temp/")
+        except Exception as e:
+            print(f"Error saving Annoy index to C:/temp/: {str(e)}")
+    
+    return features, tfidf, scaler
+
+
+print("Starting app creation...")
 
 def create_app():
+    print("Initializing Flask app...")
     app = Flask(__name__)
     CORS(app)
 
-    # MongoDB Atlas connection string
+    print("Connecting to MongoDB...")
     client = MongoClient('mongodb+srv://loko:melike2004@lovelores.h1nkog2.mongodb.net/?retryWrites=true&w=majority&appName=LoveLores')
     db = client.GoSpot
 
-    # Load and preprocess data
+    print("Preprocessing data...")
     df = preprocess_data(initial_weights)
-    features, tfidf, coordinate_scaler = create_feature_matrix(df)
-    # features_sparse = csr_matrix(features)
-    # item_similarity = cosine_similarity(features_sparse, dense_output=False)
-    #item_similarity = cosine_similarity(features)
-
-
-    item_similarity = calculate_similarity_in_chunks(features)
-    #app.config['item_similarity'] = item_similarity
+    
+    print("Creating and saving Annoy index...")
+    features, tfidf, coordinate_scaler = create_and_save_annoy_index(df)
+    
+    print("Setting up app configurations...")
     app.config['df'] = df
     app.config['tfidf'] = tfidf
     app.config['coordinate_scaler'] = coordinate_scaler
     app.config['features'] = features
     app.config['reverse_category_mapping'] = reverse_category_mapping
     app.config['db'] = db
-    app.config['item_similarity'] = item_similarity
-    # app.config['spot_details'] = spot_details
-    #app.config['item_similarity'] = item_similarity
+    app.config['annoy_index_path'] = 'item_similarity.ann'
 
+    print("Registering blueprint...")
     app.register_blueprint(normal_route, url_prefix='/user')
 
+    print("App creation completed.")
     return app
 
 if __name__ == '__main__':
-    app = create_app()
-    
-    # with app.app_context():
-    #     from helpers import get_user_profile, get_tfidf, get_coordinate_scaler
-    #     print(get_user_profile(1, get_tfidf(), get_coordinate_scaler()))
-    
-    app.run(debug=True)
+    try:
+        print("Creating app...")
+        app = create_app()
+        print("Running app...")
+        app.run(debug=True)
+    except Exception as e:
+        print(f"An error occurred: {str(e)}")
+        import traceback
+        traceback.print_exc()
