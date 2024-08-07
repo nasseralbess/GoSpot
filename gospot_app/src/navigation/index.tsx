@@ -11,7 +11,7 @@ import NewPasswordScreen from '../screens/NewPasswordScreen';
 import HomeScreen from '../screens/HomeScreen';
 import DetailScreen from '../screens/DetailScreen';
 import SavedScreen from '../screens/SavedScreen';
-import FriendsScreen from '../screens/FriendsScreen';
+import GroupsScreen from '../screens/GroupsScreen';
 import ProfileScreen from '../screens/ProfileScreen';
 
 const Stack = createNativeStackNavigator();
@@ -37,7 +37,7 @@ const MainTabs = () => {
       <Tab.Screen name="Home" component={HomeScreen} options={{ headerShown: false }} />
       <Tab.Screen name="Saved" component={SavedScreen} />
       <Tab.Screen name="Profile" component={ProfileScreen} />
-      <Tab.Screen name="Friends" component={FriendsScreen} />
+      <Tab.Screen name="GroupsScreen" component={GroupsScreen} />
     </Tab.Navigator>
   );
 };
