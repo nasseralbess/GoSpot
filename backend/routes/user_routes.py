@@ -146,7 +146,6 @@ def update_user_coordinates():
             }
         }
     )
-
     if result.modified_count:
         return jsonify({'message': f"Coordinates updated for user {user_id}"}), 200
     else:
@@ -198,7 +197,6 @@ def get_next_spot():
     next_spot = get_next_items(user_id)
     db = current_app.config['db']
     user = db['User']
-    
     try:
         user_id = int(user_id)
     except:
@@ -215,9 +213,28 @@ def get_next_spot():
             ret.append(id)
     
     if ret:
-        return jsonify(ret), 200
+        allDetails = retrievingDetails(ret)
+        # print(allDetails)
+        return jsonify(allDetails), 200
     
     return jsonify({'message': 'No more spots available'}), 404
+
+
+def retrievingDetails(spotLists) :
+    db = current_app.config['db']
+    spots = db['Spot']
+   
+    # Query to find documents with the specified IDs
+    query = {"_id": {"$in": spotLists}}
+    results = list(spots.find(query)  )
+   
+    return results  
+    # detailItems = []
+    # for item in spotLists:
+    #     retrieved = spots.find_one()
+
+
+
 
 
 @normal_route.route('/get-group-spot', methods=['GET'])
