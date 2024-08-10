@@ -26,6 +26,7 @@ const HomeScreen: React.FC<{ navigation: any }> = ({ navigation }) => {
 
   const fetchDataFirst = async () => {
     try {
+      // Remember to change hte user id dynamically
       const response = await fetch('http://127.0.0.1:5000/user/get-next-spot?user_id=2');
       const data: any[] = await response.json();
       const convertedData = data.map((item, index) => ({
