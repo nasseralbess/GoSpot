@@ -139,48 +139,48 @@ def build_annoy_index(features, n_trees=5, max_items=100):
     return t
 
 def create_and_save_annoy_index(df):
-    print("Starting create_feature_matrix...")
+    # print("Starting create_feature_matrix...")
     features, tfidf, scaler = create_feature_matrix(df)
-    print(f"Feature matrix created. Shape: {features.shape}")
+    # print(f"Feature matrix created. Shape: {features.shape}")
     
-    print("Building Annoy index...")
-    annoy_index = build_annoy_index(features)
-    print("Annoy index built successfully")
+    # print("Building Annoy index...")
+    # annoy_index = build_annoy_index(features)
+    # print("Annoy index built successfully")
     
-    print("Saving Annoy index...")
-    try:
-        annoy_index.save('item_similarity.ann')
-        print("Annoy index saved successfully")
-    except Exception as e:
-        print(f"Error saving Annoy index: {str(e)}")
-        # Try saving to a different location
-        try:
-            annoy_index.save('C:/temp/item_similarity.ann')
-            print("Annoy index saved successfully to C:/temp/")
-        except Exception as e:
-            print(f"Error saving Annoy index to C:/temp/: {str(e)}")
+    # print("Saving Annoy index...")
+    # try:
+    #     annoy_index.save('item_similarity.ann')
+    #     print("Annoy index saved successfully")
+    # except Exception as e:
+    #     print(f"Error saving Annoy index: {str(e)}")
+    #     # Try saving to a different location
+    #     try:
+    #         annoy_index.save('C:/temp/item_similarity.ann')
+    #         print("Annoy index saved successfully to C:/temp/")
+    #     except Exception as e:
+    #         print(f"Error saving Annoy index to C:/temp/: {str(e)}")
     
     return features, tfidf, scaler
 
 
-print("Starting app creation...")
+# print("Starting app creation...")
 
 def create_app():
-    print("Initializing Flask app...")
+    # print("Initializing Flask app...")
     app = Flask(__name__)
     CORS(app)
 
-    print("Connecting to MongoDB...")
+    # print("Connecting to MongoDB...")
     client = MongoClient('mongodb+srv://loko:melike2004@lovelores.h1nkog2.mongodb.net/?retryWrites=true&w=majority&appName=LoveLores')
     db = client.GoSpot
 
-    print("Preprocessing data...")
+    # print("Preprocessing data...")
     df = preprocess_data(initial_weights)
     
-    print("Creating and saving Annoy index...")
+    # print("Creating and saving Annoy index...")
     features, tfidf, coordinate_scaler = create_and_save_annoy_index(df)
     
-    print("Setting up app configurations...")
+    # print("Setting up app configurations...")
     app.config['df'] = df
     app.config['tfidf'] = tfidf
     app.config['coordinate_scaler'] = coordinate_scaler
@@ -197,10 +197,10 @@ def create_app():
 
 if __name__ == '__main__':
     try:
-        print("Creating app...")
+        # print("Creating app...")
         app = create_app()
-        print("Running app...")
-        app.run(debug=True)
+        # print("Running app...")
+        app.run(port=8080,debug=True)
     except Exception as e:
         print(f"An error occurred: {str(e)}")
         import traceback

@@ -26,9 +26,16 @@ def get_coordinate_scaler():
 # def get_spot_details():
 #     return current_app.config['spot_details']
 def get_annoy_index():
+    # print('in annoy index')
     features = current_app.config['features']
+    # print('features shape:',features.shape) 
     f = features.shape[1]
     annoy_index = AnnoyIndex(f, 'angular')
+    # print('path:',current_app.config['annoy_index_path'])
+    # import os
+    # print("Current directory:", os.getcwd())
+    # print("accessible: ",os.path.exists(current_app.config['annoy_index_path']))
+    # print('current accessible files: ',os.listdir())    
     annoy_index.load(current_app.config['annoy_index_path'])
     return annoy_index
 def get_user_profile(user_id, tfidf, coordinate_scaler):
@@ -149,7 +156,7 @@ def user_based_recommend(user_id, n):
 def item_based_recommend(base_items, n):
     df = get_df()
     annoy_index = get_annoy_index()
-    
+    # print('here safely')
     base_indices = df[df['id'].isin(base_items)].index
     
     similar_items = set()
@@ -217,9 +224,11 @@ def get_next_items(user_id, n=10):
     
     # Get n/2 recommendations based on user profile
     user_based_recommendations = user_based_recommend(user_id, n // 2)
+    print('\n user based recommendations:',user_based_recommendations,'\n')
     
     # Get n/2 recommendations based on item similarity to the user-based recommendations
     item_based_recommendations = item_based_recommend(user_based_recommendations, n // 2)
+    print('\n item based recommendations:',item_based_recommendations,'\n')
     
     # Combine and shuffle the recommendations
     all_recommendations = user_based_recommendations + item_based_recommendations

@@ -213,9 +213,9 @@ def get_next_spot():
             ret.append(id)
     
     if ret:
-        allDetails = retrievingDetails(ret)
+        # allDetails = retrievingDetails(ret)
         # print(allDetails)
-        return jsonify(allDetails), 200
+        return jsonify(ret), 200
     
     return jsonify({'message': 'No more spots available'}), 404
 
