@@ -100,20 +100,25 @@ def get_user_profile(user_id, tfidf, coordinate_scaler):
             else:
                 # User didn't press details, subtract a fraction of the feature vector
                 user_vector -= features[spot_index] * 0.2
-    
+    # print('\n\nhere2\n\n')
     norm = np.linalg.norm(user_vector)
     if norm > 0:
         user_vector /= norm
-    
+
+    # print('\n\nhere3\n\n')
+    # print('\n\nuser vector:',user_vector,'\n\n')
+    # print('\n\nto list:',user_vector.tolist,'\n\n')
+
     return user_vector
 
 
-def get_group_profile(user_ids, tfidf, coordinate_scaler):
-    features = get_features()
-    group_vector = np.zeros(features.shape[1])
+def get_group_profile(user_ids):
+    group_vector = np.zeros(get_features().shape[1])
+    db = get_db()
+    # print('\n\n\n',user_ids,'\n\n\n')
     for user_id in user_ids:
-        user_vector = get_user_profile(user_id, tfidf, coordinate_scaler)
-        group_vector += user_vector
+        # print('\n\n\n',get_db()['UserVectors'].find_one({'_id': user_id}), '\n\n\n')
+        group_vector += db['UserVectors'].find_one({'_id': user_id})['vector']
     
     # Normalize the group vector
     norm = np.linalg.norm(group_vector)
@@ -137,14 +142,12 @@ def user_based_recommend(user_id, n):
     user = db['User']
     features = get_features()
     df = get_df()
-    tfidf = get_tfidf()
     # spot_details = get_spot_details()
-    coordinate_scaler = get_coordinate_scaler()
     if user_id not in user.distinct('_id'):
         # New user: use a fallback method (e.g., popular items)
         return popular_items_recommend(n)
     
-    user_profile = get_user_profile(user_id, tfidf, coordinate_scaler)
+    user_profile = db['UserVectors'].find_one({'_id': user_id})['vector']
     scores = cosine_similarity([user_profile], features)[0]
     
     top_indices = scores.argsort()[-n:][::-1]
@@ -176,10 +179,8 @@ def item_based_recommend(base_items, n):
 def group_based_recommend(user_ids, n=10):
     features = get_features()
     df = get_df()
-    tfidf = get_tfidf()
     # spot_details = get_spot_details()
-    coordinate_scaler = get_coordinate_scaler()
-    group_profile = get_group_profile(user_ids, tfidf, coordinate_scaler)
+    group_profile = get_group_profile(user_ids)
     scores = cosine_similarity([group_profile], features)[0]
     
     top_indices = scores.argsort()[-n:][::-1]
@@ -191,12 +192,13 @@ def least_misery_group_recommend(user_ids, n=10):
     individual_scores = []
     features = get_features()
     df = get_df()
-    tfidf = get_tfidf()
     # spot_details = get_spot_details()
-    coordinate_scaler = get_coordinate_scaler()
+    # print('\n\n\nhere\n\n\n')
     for user_id in user_ids:
-        user_profile = get_user_profile(user_id, tfidf, coordinate_scaler)
+        # print('\n\n\ngetdb: ',get_db()['UserVectors'].find_one({'_id': int(user_id)}), '\n\n\n')
+        user_profile = get_db()['UserVectors'].find_one({'_id': user_id})['vector']
         scores = cosine_similarity([user_profile], features)[0]
+        # print('cosine similarity:',cosine_similarity([user_profile], features), '\n', 'scores:',scores,'\n')
         individual_scores.append(scores)
     
     # Take the minimum score for each item across all users
@@ -211,9 +213,9 @@ def get_group_recommendation(user_ids):
     # You could alternate between different group recommendation strategies
     strategies = [group_based_recommend, least_misery_group_recommend]
     strategy = random.choice(strategies)
-    
+    user_ids = [int(user_id) for user_id in user_ids]
     recommendations = strategy(user_ids, n=10)
-    if not recommendations.empty:
+    if not recommendations:
         return recommendations.iloc[0]
     else:
         return None
@@ -224,15 +226,14 @@ def get_next_items(user_id, n=10):
     
     # Get n/2 recommendations based on user profile
     user_based_recommendations = user_based_recommend(user_id, n // 2)
-    print('\n user based recommendations:',user_based_recommendations,'\n')
+    # print('\n user based recommendations:',user_based_recommendations,'\n')
     
     # Get n/2 recommendations based on item similarity to the user-based recommendations
     item_based_recommendations = item_based_recommend(user_based_recommendations, n // 2)
-    print('\n item based recommendations:',item_based_recommendations,'\n')
+    # print('\n item based recommendations:',item_based_recommendations,'\n')
     
     # Combine and shuffle the recommendations
     all_recommendations = user_based_recommendations + item_based_recommendations
     random.shuffle(all_recommendations)
     return all_recommendations
-
 

@@ -17,7 +17,6 @@ from sklearn.metrics.pairwise import cosine_similarity
 # from flask_wtf.csrf import CSRFProtect
 from scipy.sparse import csr_matrix
 from annoy import AnnoyIndex
-
 category_mapping = {
     'American': ['American', 'New American', 'Southern', 'Soul Food', 'Cajun/Creole', 'Tex-Mex'],
     'Asian': ['Chinese', 'Japanese', 'Korean', 'Thai', 'Vietnamese', 'Indian', 'Pakistani', 'Bangladeshi', 'Taiwanese', 'Filipino', 'Malaysian', 'Indonesian', 'Singaporean', 'Burmese', 'Cambodian', 'Laotian', 'Mongolian', 'Nepalese', 'Sri Lankan', 'Asian Fusion'],
@@ -201,6 +200,7 @@ if __name__ == '__main__':
         app = create_app()
         # print("Running app...")
         app.run(port=8080,debug=True)
+        
     except Exception as e:
         print(f"An error occurred: {str(e)}")
         import traceback

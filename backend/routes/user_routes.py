@@ -240,6 +240,7 @@ def retrievingDetails(spotLists) :
 @normal_route.route('/get-group-spot', methods=['GET'])
 def get_next_group_spot():
     user_ids = request.args.getlist('user_ids')
+    # print('\n\n user_ids:',user_ids,'\n\n')
     group_spot = get_group_recommendation(user_ids)
     
     if group_spot is not None:
@@ -280,7 +281,8 @@ def add_to_group():
 
 # @normal_route.route('/add-friend', methods=['POST'])
 # def add_friend():
-#     print("request sent")
+#     
+# ("request sent")
 #     data = request.json
 #     user_id = data.get('user_id')
 #     friend_id = data.get('friend_id')
