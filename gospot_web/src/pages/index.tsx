@@ -7,7 +7,7 @@ import { datas } from '../app/utils/data';
 export async function getServerSideProps() {
   try {
     // Fetch the first set of data
-    const ids = await fetch('http://127.0.0.1:8080/user/get-next-spot?user_id=1');
+    const ids = await fetch('http://127.0.0.1:8080/user/get-next-spot?user_id=2');
     if (!ids.ok) {
       const text = await ids.text();
       throw new Error(`Failed to fetch ids: ${ids.status} - ${text}`);

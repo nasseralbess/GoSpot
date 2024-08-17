@@ -179,7 +179,30 @@ def get_next_spot():
     
     return jsonify({'message': 'No more spots available'}), 404
 
+# Create the route
+@normal_route.route('/retrieve-details', methods=['POST'])
+def retrieve_details():
+    # schema = SpotListSchema()
+    # ADD VALIDATION
+    # try:
+    #     # Validate the input data
+    #     data = schema.load(request.json)
+    # except ValidationError as err:
+    #     return jsonify(err.messages), 400
+    data = request.json
+    # Extract the list of spot IDs
+    spotLists = data['spotLists']
 
+    # Connect to the database
+    db = current_app.config['db']
+    spots = db['Spot']
+
+    # Query to find documents with the specified IDs
+    query = {"_id": {"$in": spotLists}}
+    results = list(spots.find(query))
+
+    # Optionally, you could serialize the results using Marshmallow
+    return jsonify(results), 200
 
 
 
