@@ -236,7 +236,7 @@ yarn-error.*
 *.tsbuildinfo
 
 expo/
-app/
+
 constants/
 scripts/
 node_modules/

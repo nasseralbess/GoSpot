@@ -1,0 +1,55 @@
+/* src/app/styles/RestaurantCard.module.css */
+.card {
+    background-color: #fff;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+    transition: transform 0.2s;
+    margin-bottom: 16px;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    padding: 12px;
+  }
+  
+  .card:hover {
+    transform: scale(1.02);
+  }
+  
+  .card img {
+    width: 120px; /* Reduce the image width for a more compact look */
+    height: auto;
+    border-radius: 8px;
+    object-fit: cover;
+    margin-right: 12px; /* Space between image and text */
+  }
+  
+  .card-content {
+    flex: 1;
+    font-size: 0.9em; /* Smaller font size for compactness */
+  }
+  
+  .card-title {
+    font-size: 1.2em;
+    margin-bottom: 4px;
+    color: var(--primary-color);
+    font-weight: 600;
+  }
+  
+  .card-description {
+    color: var(--text-color);
+    margin-bottom: 4px;
+    line-height: 1.2; /* Tighter line spacing */
+  }
+  
+  .card a {
+    color: var(--primary-color);
+    text-decoration: none;
+    font-weight: bold;
+    font-size: 0.9em;
+  }
+  
+  .card a:hover {
+    text-decoration: underline;
+  }
+  
