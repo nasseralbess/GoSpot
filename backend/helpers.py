@@ -23,21 +23,18 @@ def get_df():
 def get_coordinate_scaler():
     return current_app.config['coordinate_scaler']
 
-# def get_spot_details():
-#     return current_app.config['spot_details']
+
 def get_annoy_index():
-    # print('in annoy index')
     features = current_app.config['features']
-    # print('features shape:',features.shape) 
-    f = features.shape[1]
+    f = features.shape[1]  # Number of dimensions (features) in each vector
+
+    # Initialize the Annoy index with the correct dimensionality and specify the use of angular distance.
     annoy_index = AnnoyIndex(f, 'angular')
-    # print('path:',current_app.config['annoy_index_path'])
-    # import os
-    # print("Current directory:", os.getcwd())
-    # print("accessible: ",os.path.exists(current_app.config['annoy_index_path']))
-    # print('current accessible files: ',os.listdir())    
+
     annoy_index.load(current_app.config['annoy_index_path'])
+
     return annoy_index
+
 def get_user_profile(user_id, tfidf, coordinate_scaler):
     db = get_db()
     user = db['User']
@@ -105,9 +102,6 @@ def get_user_profile(user_id, tfidf, coordinate_scaler):
     if norm > 0:
         user_vector /= norm
 
-    # print('\n\nhere3\n\n')
-    # print('\n\nuser vector:',user_vector,'\n\n')
-    # print('\n\nto list:',user_vector.tolist,'\n\n')
 
     return user_vector
 
@@ -142,7 +136,6 @@ def user_based_recommend(user_id, n):
     user = db['User']
     features = get_features()
     df = get_df()
-    # spot_details = get_spot_details()
     if user_id not in user.distinct('_id'):
         # New user: use a fallback method (e.g., popular items)
         return popular_items_recommend(n)
@@ -179,7 +172,6 @@ def item_based_recommend(base_items, n):
 def group_based_recommend(user_ids, n=10):
     features = get_features()
     df = get_df()
-    # spot_details = get_spot_details()
     group_profile = get_group_profile(user_ids)
     scores = cosine_similarity([group_profile], features)[0]
     
@@ -192,8 +184,6 @@ def least_misery_group_recommend(user_ids, n=10):
     individual_scores = []
     features = get_features()
     df = get_df()
-    # spot_details = get_spot_details()
-    # print('\n\n\nhere\n\n\n')
     for user_id in user_ids:
         # print('\n\n\ngetdb: ',get_db()['UserVectors'].find_one({'_id': int(user_id)}), '\n\n\n')
         user_profile = get_db()['UserVectors'].find_one({'_id': user_id})['vector']
@@ -236,4 +226,3 @@ def get_next_items(user_id, n=10):
     all_recommendations = user_based_recommendations + item_based_recommendations
     random.shuffle(all_recommendations)
     return all_recommendations
-

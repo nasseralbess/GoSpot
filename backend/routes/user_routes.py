@@ -151,44 +151,6 @@ def update_user_coordinates():
     else:
         return jsonify({'error': 'User not found or no changes made'}), 404
 
-# Adding a new friend 
-# Additional validation where it checks if both users exists 
-# @normal_route.route('/add-friend', methods=['POST'])
-# def add_friend():
-#     db = current_app.config['db']
-#     user = db['User']
-
-#     user_to_add = request.args.get('friend')
-    
-#     current_user = request.args.get('user')
-
-#     if not user_to_add or not current_user:
-#         return jsonify({'error': 'User and friend information must be provided'}), 400
-
-#     # Check if users exists in the database
-#      # Check if both users exist in the database
-#     if not user.find_one({'_id': int(current_user)}):
-#         return jsonify({'error': f'User {current_user} does not exist'}), 404
-    
-#     if not user.find_one({'_id': int(user_to_add)}):
-#         return jsonify({'error': f'Friend {user_to_add} does not exist'}), 404
-
-
-#     result = user.update_one(
-#         {'_id': int(current_user)},
-#         {
-#             '$push': {
-#                 'friends': int(user_to_add)
-#             }
-#         }
-#     )
-
-#     if result.modified_count:
-#         return jsonify({'message': f"Added friend for user {current_user}"}), 200
-#     else:
-#         return jsonify({'error': 'User not found or no changes made'}), 404
-
-
 
 # Not working for string ids 
 @normal_route.route('/get-next-spot', methods=['GET'])
@@ -213,25 +175,9 @@ def get_next_spot():
             ret.append(id)
     
     if ret:
-        # allDetails = retrievingDetails(ret)
-        # print(allDetails)
         return jsonify(ret), 200
     
     return jsonify({'message': 'No more spots available'}), 404
-
-
-def retrievingDetails(spotLists) :
-    db = current_app.config['db']
-    spots = db['Spot']
-   
-    # Query to find documents with the specified IDs
-    query = {"_id": {"$in": spotLists}}
-    results = list(spots.find(query)  )
-   
-    return results  
-    # detailItems = []
-    # for item in spotLists:
-    #     retrieved = spots.find_one()
 
 
 
@@ -278,25 +224,3 @@ def add_to_group():
 
 
 
-
-# @normal_route.route('/add-friend', methods=['POST'])
-# def add_friend():
-#     
-# ("request sent")
-#     data = request.json
-#     user_id = data.get('user_id')
-#     friend_id = data.get('friend_id')
-
-#     db = current_app.config['db']
-#     user = db['User']
-
-#     user.update_one(
-#         {'_id': user_id},
-#         {
-#             '$addToSet': {
-#                 'friends': friend_id
-#             }
-#         }
-#     )
-
-#     return jsonify({'message': f"Friend {friend_id} added for user {user_id}"}), 200

@@ -16,8 +16,10 @@ from sklearn.metrics.pairwise import cosine_similarity
 from scipy.sparse import csr_matrix
 from annoy import AnnoyIndex
 
+
 # Application-specific imports
 from routes.user_routes import normal_route
+from annoy_index import create_and_save_annoy_index  # Import the new function
 
 
 category_mapping = {
@@ -58,7 +60,7 @@ reverse_category_mapping = {sub_cat: main_cat for main_cat, sub_cats in category
 
 
 # Load the data
-with open('Updating_datasets/initial_weights.json', 'r') as file:
+with open('datasets/initial_weights.json', 'r') as file:
     data = json.load(file)
 
 index=[]
@@ -69,18 +71,7 @@ for key,value in data.items():
     
 initial_weights = pd.DataFrame(vals,columns=[key for key in data[index[0]].keys()],index=index)
 
-# with open('Updating_datasets/spot_details.json', 'r') as file:
-#     spot_details = json.load(file)
-# index,vals = [],[]
-# # print(spot_details)
-# for key,value in spot_details.items():
-#     index.append(key)
-#     vals.append([val for val in value.values()])
-# print(len(vals),len(index))
 
-# spot_details = pd.DataFrame(vals,columns=[key for key in spot_details[index[0]].keys()],index=index)
-# spot_details = spot_details.copy().reset_index()
-# spot_details.rename(columns={'index': 'id'}, inplace=True)
 user_preferences = {}
 
 def preprocess_data(initial_weights):
@@ -104,68 +95,7 @@ def preprocess_data(initial_weights):
 
 
 df = preprocess_data(initial_weights)
-#print(df)
 
-#one time thing, should be saved into the database as read only, unless we expand with more datasets
-def create_feature_matrix(df):
-    tfidf = TfidfVectorizer()
-    tfidf_matrix = tfidf.fit_transform(df['categories'])
-    
-    scaler = MinMaxScaler()
-    numerical_features = scaler.fit_transform(df[['review_count', 'rating', 'latitude', 'longitude']].fillna(0))
-    
-    price_dummies = pd.get_dummies(df['price'], prefix='price').fillna(0)
-    
-    features = np.hstack((tfidf_matrix.toarray(), numerical_features, price_dummies.values))
-    
-    return features, tfidf, scaler
-
-def build_annoy_index(features, n_trees=5, max_items=100):
-    print(f"Building Annoy index with {features.shape[1]} dimensions...")
-    f = features.shape[1]
-    t = AnnoyIndex(f, 'angular')
-    try:
-        for i in range(min(features.shape[0], max_items)):
-            print(f"Adding item {i} to the index")
-            t.add_item(i, features[i])
-        print(f"Added {min(features.shape[0], max_items)} items to the index")
-        
-        print(f"Starting to build index with {n_trees} trees...")
-        t.build(n_trees)
-        print(f"Built index with {n_trees} trees")
-    except Exception as e:
-        print(f"Error in build_annoy_index: {str(e)}")
-        import traceback
-        traceback.print_exc()
-        raise
-    return t
-
-def create_and_save_annoy_index(df):
-    # print("Starting create_feature_matrix...")
-    features, tfidf, scaler = create_feature_matrix(df)
-    # print(f"Feature matrix created. Shape: {features.shape}")
-    
-    # print("Building Annoy index...")
-    # annoy_index = build_annoy_index(features)
-    # print("Annoy index built successfully")
-    
-    # print("Saving Annoy index...")
-    # try:
-    #     annoy_index.save('item_similarity.ann')
-    #     print("Annoy index saved successfully")
-    # except Exception as e:
-    #     print(f"Error saving Annoy index: {str(e)}")
-    #     # Try saving to a different location
-    #     try:
-    #         annoy_index.save('C:/temp/item_similarity.ann')
-    #         print("Annoy index saved successfully to C:/temp/")
-    #     except Exception as e:
-    #         print(f"Error saving Annoy index to C:/temp/: {str(e)}")
-    
-    return features, tfidf, scaler
-
-
-# print("Starting app creation...")
 
 def create_app():
     # print("Initializing Flask app...")
@@ -189,7 +119,7 @@ def create_app():
     app.config['features'] = features
     app.config['reverse_category_mapping'] = reverse_category_mapping
     app.config['db'] = db
-    app.config['annoy_index_path'] = 'item_similarity.ann'
+    app.config['annoy_index_path'] = 'datasets/item_similarity.ann'
 
     print("Registering blueprint...")
     app.register_blueprint(normal_route, url_prefix='/user')
@@ -199,9 +129,9 @@ def create_app():
 
 if __name__ == '__main__':
     try:
-        # print("Creating app...")
+        print("Creating app...")
         app = create_app()
-        # print("Running app...")
+        print("Running app...")
         app.run(port=8080,debug=True)
         
     except Exception as e:
