@@ -1,22 +1,25 @@
-from pymongo import MongoClient
-from flask_cors import CORS
-from routes.user_routes import normal_route
-# from helpers import *
+# Flask-related imports
 from flask import Flask, request, jsonify
-import json
-from pymongo import MongoClient
 from flask_cors import CORS
-from routes.user_routes import normal_route
+
+# Database-related imports
+from pymongo import MongoClient
+
+# Data processing and machine learning imports
+import json
 import hashlib
 import pandas as pd
 import numpy as np
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.preprocessing import MinMaxScaler
 from sklearn.metrics.pairwise import cosine_similarity
-# ONLY FOR TESTING PURPOSES 
-# from flask_wtf.csrf import CSRFProtect
 from scipy.sparse import csr_matrix
 from annoy import AnnoyIndex
+
+# Application-specific imports
+from routes.user_routes import normal_route
+
+
 category_mapping = {
     'American': ['American', 'New American', 'Southern', 'Soul Food', 'Cajun/Creole', 'Tex-Mex'],
     'Asian': ['Chinese', 'Japanese', 'Korean', 'Thai', 'Vietnamese', 'Indian', 'Pakistani', 'Bangladeshi', 'Taiwanese', 'Filipino', 'Malaysian', 'Indonesian', 'Singaporean', 'Burmese', 'Cambodian', 'Laotian', 'Mongolian', 'Nepalese', 'Sri Lankan', 'Asian Fusion'],

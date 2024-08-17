@@ -7,7 +7,7 @@ source path/to/venv/bin/activate
 then install the requirenments by 
 python3 -m pip install -r requirements.txt
 
-In order to run backend and frontend at the same time, you have to clone 
-the same project two different times. 
+In order to run project, u have to open one terminal go to backend folder and run python3 app.py. 
+Then, split terminal and go to frontend and run npm start 
 
 

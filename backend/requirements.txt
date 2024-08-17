@@ -122,3 +122,4 @@ websocket-client==1.8.0
 Werkzeug==3.0.3
 widgetsnbextension==4.0.11
 WTForms==3.1.2
+annoy==1.17.3
