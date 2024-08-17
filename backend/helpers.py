@@ -47,7 +47,7 @@ def get_user_profile(user_id, tfidf, coordinate_scaler):
     
     user_vector = np.zeros(features.shape[1])
     user_data = list(user.find({'_id': user_id}))[0]
-    # print('user data: ',user_data)
+
     general_prefs = user_data['general_preferences']
     for category in general_prefs['categories']:
         mapped_category = reverse_category_mapping.get(category, category)
@@ -58,6 +58,7 @@ def get_user_profile(user_id, tfidf, coordinate_scaler):
     user_vector[price_index] = 1
     
     user_coords = np.array(general_prefs['coordinates']).reshape(1, -1)
+    
     # Create a dummy array with 4 features to match the scaler's expected input
     dummy_coords = np.zeros((1, 4))
     dummy_coords[0, 2:] = user_coords  # Assuming latitude and longitude are the last two features
@@ -97,7 +98,7 @@ def get_user_profile(user_id, tfidf, coordinate_scaler):
             else:
                 # User didn't press details, subtract a fraction of the feature vector
                 user_vector -= features[spot_index] * 0.2
-    # print('\n\nhere2\n\n')
+
     norm = np.linalg.norm(user_vector)
     if norm > 0:
         user_vector /= norm
@@ -109,9 +110,8 @@ def get_user_profile(user_id, tfidf, coordinate_scaler):
 def get_group_profile(user_ids):
     group_vector = np.zeros(get_features().shape[1])
     db = get_db()
-    # print('\n\n\n',user_ids,'\n\n\n')
+
     for user_id in user_ids:
-        # print('\n\n\n',get_db()['UserVectors'].find_one({'_id': user_id}), '\n\n\n')
         group_vector += db['UserVectors'].find_one({'_id': user_id})['vector']
     
     # Normalize the group vector
@@ -152,7 +152,6 @@ def user_based_recommend(user_id, n):
 def item_based_recommend(base_items, n):
     df = get_df()
     annoy_index = get_annoy_index()
-    # print('here safely')
     base_indices = df[df['id'].isin(base_items)].index
     
     similar_items = set()
@@ -178,17 +177,14 @@ def group_based_recommend(user_ids, n=10):
     top_indices = scores.argsort()[-n:][::-1]
     recommended_ids = df.iloc[top_indices]['id'].tolist()
     return recommended_ids
-    # return spot_details[spot_details['id'].isin(recommended_ids)][['id', 'name', 'image_url', 'phone']]
 
 def least_misery_group_recommend(user_ids, n=10):
     individual_scores = []
     features = get_features()
     df = get_df()
     for user_id in user_ids:
-        # print('\n\n\ngetdb: ',get_db()['UserVectors'].find_one({'_id': int(user_id)}), '\n\n\n')
         user_profile = get_db()['UserVectors'].find_one({'_id': user_id})['vector']
         scores = cosine_similarity([user_profile], features)[0]
-        # print('cosine similarity:',cosine_similarity([user_profile], features), '\n', 'scores:',scores,'\n')
         individual_scores.append(scores)
     
     # Take the minimum score for each item across all users
@@ -216,11 +212,9 @@ def get_next_items(user_id, n=10):
     
     # Get n/2 recommendations based on user profile
     user_based_recommendations = user_based_recommend(user_id, n // 2)
-    # print('\n user based recommendations:',user_based_recommendations,'\n')
     
     # Get n/2 recommendations based on item similarity to the user-based recommendations
     item_based_recommendations = item_based_recommend(user_based_recommendations, n // 2)
-    # print('\n item based recommendations:',item_based_recommendations,'\n')
     
     # Combine and shuffle the recommendations
     all_recommendations = user_based_recommendations + item_based_recommendations

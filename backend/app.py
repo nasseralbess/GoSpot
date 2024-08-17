@@ -98,21 +98,16 @@ df = preprocess_data(initial_weights)
 
 
 def create_app():
-    # print("Initializing Flask app...")
     app = Flask(__name__)
     CORS(app)
 
-    # print("Connecting to MongoDB...")
     client = MongoClient('mongodb+srv://loko:melike2004@lovelores.h1nkog2.mongodb.net/?retryWrites=true&w=majority&appName=LoveLores')
     db = client.GoSpot
 
-    # print("Preprocessing data...")
     df = preprocess_data(initial_weights)
     
-    # print("Creating and saving Annoy index...")
     features, tfidf, coordinate_scaler = create_and_save_annoy_index(df)
     
-    # print("Setting up app configurations...")
     app.config['df'] = df
     app.config['tfidf'] = tfidf
     app.config['coordinate_scaler'] = coordinate_scaler
