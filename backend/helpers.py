@@ -136,7 +136,10 @@ def user_based_recommend(user_id, n):
     user = db['User']
     features = get_features()
     df = get_df()
+    user_id = int(user_id)
     if user_id not in user.distinct('_id'):
+        print(user.distinct('_id'))
+        print('User not found')
         # New user: use a fallback method (e.g., popular items)
         return popular_items_recommend(n)
     
@@ -201,8 +204,6 @@ def get_group_recommendation(user_ids):
     strategy = random.choice(strategies)
     user_ids = [int(user_id) for user_id in user_ids]
     recommendations = strategy(user_ids, n=10)
-    # print('\n\nstrategy:', strategy, '\n\n')
-    # print('\n\nrecommendations:', recommendations, '\n\n')
     if recommendations:
         return recommendations
     else:
