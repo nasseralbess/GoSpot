@@ -1,0 +1,12 @@
+INSTALL NODE AND NPM
+https://nodejs.org/en/download/package-manager
+https://radixweb.com/blog/installing-npm-and-nodejs-on-windows-and-mac
+or just seearch up how to install node and NPM 
+
+OPTIONAL, install node version manager, NVM 
+https://www.freecodecamp.org/news/node-version-manager-nvm-install-guide/
+
+then 
+npm install 
+then 
+npm run dev
