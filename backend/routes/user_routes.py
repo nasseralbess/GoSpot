@@ -206,6 +206,8 @@ def create_group():
     })
     return jsonify({'group created': group_id}), 200
 
+
+
 @normal_route.route('/add-to-group', methods=['POST'])
 def add_to_group():
     data = request.json
