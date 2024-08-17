@@ -201,8 +201,10 @@ def get_group_recommendation(user_ids):
     strategy = random.choice(strategies)
     user_ids = [int(user_id) for user_id in user_ids]
     recommendations = strategy(user_ids, n=10)
-    if not recommendations:
-        return recommendations.iloc[0]
+    # print('\n\nstrategy:', strategy, '\n\n')
+    # print('\n\nrecommendations:', recommendations, '\n\n')
+    if recommendations:
+        return recommendations
     else:
         return None
     

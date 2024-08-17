@@ -190,7 +190,7 @@ def get_next_group_spot():
     group_spot = get_group_recommendation(user_ids)
     
     if group_spot is not None:
-        return jsonify(group_spot.to_dict()), 200
+        return jsonify(group_spot), 200
     else:
         return jsonify({'message': 'No group spot available'}), 404
 
