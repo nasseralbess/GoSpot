@@ -1,0 +1,34 @@
+/* src/app/styles/Header.module.css */
+.header {
+  background-color: #1D4ED8; /* Header background color */
+  padding: 1rem;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.logo {
+  color: #fff;
+  font-size: 1.5rem;
+  font-weight: bold;
+}
+
+.nav {
+  display: flex;
+  gap: 2rem;
+}
+
+.navLink {
+  color: #fff;
+  transition: color 0.2s;
+}
+
+.navLink:hover {
+  color: #D1D5DB; /* Light gray color on hover */
+}

@@ -1,0 +1,39 @@
+/* src/app/styles/Footer.module.css */
+.footer {
+  background-color: #1D4ED8; /* Matching the header's color */
+  color: #fff;
+  padding: 2rem 1rem;
+  box-shadow: 0 -2px 4px rgba(0,0,0,0.1);
+  text-align: center;
+}
+
+.footerContainer {
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.footerLogo {
+  font-size: 1.5rem;
+  font-weight: bold;
+  margin-bottom: 1rem;
+}
+
+.footerNav {
+  display: flex;
+  justify-content: center;
+  gap: 2rem; /* Ensure this value is sufficient */
+  margin-bottom: 1rem;
+}
+
+.footerNavLink {
+  color: #fff;
+  transition: color 0.2s;
+}
+
+.footerNavLink:hover {
+  color: #D1D5DB; /* Light gray color on hover */
+}
+
+.footerText {
+  font-size: 0.875rem; /* Smaller font size for footer text */
+}

@@ -1,0 +1,23 @@
+import React from 'react';
+import Link from 'next/link';
+import styles from '../styles/Header.module.css'; // Adjust the path if necessary
+
+const Header: React.FC = () => {
+  return (
+    <header className={styles.header}>
+      <div className={styles.container}>
+        <div className={styles.logo}>
+          <Link href="/">GoSpot</Link>
+        </div>
+        <nav className={styles.nav}>
+          <Link href="/solo" className={styles.navLink}>Solo</Link>
+          <Link href="/group" className={styles.navLink}>Group</Link>
+          <Link href="/about-us" className={styles.navLink}>About Us</Link>
+          <Link href="/profile" className={styles.navLink}>Profile</Link>
+        </nav>
+      </div>
+    </header>
+  );
+};
+
+export default Header;
