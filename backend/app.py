@@ -57,7 +57,7 @@ category_mapping = {
 
 # Create a reverse mapping for easy lookup
 reverse_category_mapping = {sub_cat: main_cat for main_cat, sub_cats in category_mapping.items() for sub_cat in sub_cats}
-
+# print(list(reverse_category_mapping.items())[:5])
 
 # Load the data
 with open('datasets/initial_weights.json', 'r') as file:
@@ -116,7 +116,7 @@ def create_app():
     app.config['db'] = db
     app.config['annoy_index_path'] = 'datasets/item_similarity.ann'
 
-    print("Registering blueprint...")
+    # print("Registering blueprint...")
     app.register_blueprint(normal_route, url_prefix='/user')
 
     print("App creation completed.")

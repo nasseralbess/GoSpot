@@ -6,20 +6,21 @@ from sklearn.preprocessing import MinMaxScaler
 import pandas as pd
 
 def create_feature_matrix(df):
-    tfidf = TfidfVectorizer()
-    tfidf_matrix = tfidf.fit_transform(df['categories'])
-    
+    tfidf = TfidfVectorizer(tokenizer=lambda x: x.split('||'))
+    df['processed_categories'] = df['categories'].apply(lambda x: x.replace(', ', '||'))
+
+    tfidf_matrix = tfidf.fit_transform(df['processed_categories'])
     scaler = MinMaxScaler()
-    numerical_features = scaler.fit_transform(df[['review_count', 'rating', 'latitude', 'longitude']].fillna(0))
+    numerical_features = scaler.fit_transform(df[['review_count', 'rating']].fillna(0))
     
     price_dummies = pd.get_dummies(df['price'], prefix='price').fillna(0)
     
     features = np.hstack((tfidf_matrix.toarray(), numerical_features, price_dummies.values))
-    
+    # print('\n\nshape:',features.shape)
     return features, tfidf, scaler
 
 def build_annoy_index(features, n_trees=150):
-    print(f"Building Annoy index with {features.shape[1]} dimensions...")
+    # print(f"Building Annoy index with {features.shape[1]} dimensions...")
     f = features.shape[1]
     t = AnnoyIndex(f, 'angular')
     try:

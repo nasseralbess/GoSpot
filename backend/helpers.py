@@ -47,23 +47,33 @@ def get_user_profile(user_id, tfidf, coordinate_scaler):
     
     user_vector = np.zeros(features.shape[1])
     user_data = list(user.find({'_id': user_id}))[0]
-
+    # print('here')
     general_prefs = user_data['general_preferences']
     for category in general_prefs['categories']:
-        mapped_category = reverse_category_mapping.get(category, category)
+        # print('category:', category)    
+        mapped_category = reverse_category_mapping.get(category, 'other').lower()
+        # print('mapped_category:', mapped_category)
+        # print('vocab:', tfidf.vocabulary_) 
         if mapped_category in tfidf.vocabulary_:
+            # print('edited user vector')
+            # print('idx:',tfidf.vocabulary_[mapped_category])
             user_vector[tfidf.vocabulary_[mapped_category]] = 1
-    
+    # print('vector:',sum(user_vector))
+    # print('in loop:')
+    # for i in range(len(user_vector)):
+    #     print('iter:',i)
+    #     if user_vector[i] != 0:
+    #         print(i,":",user_vector[i], end='\t')
     price_index = features.shape[1] - 4 + len(general_prefs['price'])
     user_vector[price_index] = 1
     
-    user_coords = np.array(general_prefs['coordinates']).reshape(1, -1)
+    # user_coords = np.array(general_prefs['coordinates']).reshape(1, -1)
     
-    # Create a dummy array with 4 features to match the scaler's expected input
-    dummy_coords = np.zeros((1, 4))
-    dummy_coords[0, 2:] = user_coords  # Assuming latitude and longitude are the last two features
-    scaled_coords = coordinate_scaler.transform(dummy_coords)
-    user_vector[-6:-4] = scaled_coords[0, 2:] 
+    # # Create a dummy array with 4 features to match the scaler's expected input
+    # dummy_coords = np.zeros((1, 4))
+    # dummy_coords[0, 2:] = user_coords  # Assuming latitude and longitude are the last two features
+    # scaled_coords = coordinate_scaler.transform(dummy_coords)
+    # user_vector[-6:-4] = scaled_coords[0, 2:] 
 
     for spot_id, spot_data in user_data['location_specific'].items():
         spot_index = df[df['id'] == spot_id].index
@@ -132,15 +142,15 @@ def popular_items_recommend(n):
 
 
 def user_based_recommend(user_id, n):
-    print('\n\nUser based recommend\n\n')
+    # print('\n\nUser based recommend\n\n')
     db = get_db()
     user = db['User']
     features = get_features()
     df = get_df()
     user_id = int(user_id)
     if user_id not in user.distinct('_id'):
-        print(user.distinct('_id'))
-        print('User not found')
+        # print(user.distinct('_id'))
+        # print('User not found')
         # New user: use a fallback method (e.g., popular items)
         return popular_items_recommend(n)
     
@@ -157,9 +167,11 @@ def item_based_recommend(base_items, n):
     df = get_df()
     annoy_index = get_annoy_index()
     base_indices = df[df['id'].isin(base_items)].index
-    
+    # print('\n\n\nbase_indices:',len(df),'\n\n\n')
     similar_items = set()
     for idx in base_indices:
+        # print('idx:',idx)
+        # print('annoy dims:',annoy_index.get_n_items(),annoy_index.get_n_trees())
         similar_indices = annoy_index.get_nns_by_item(idx, n)
         similar_items.update(df.iloc[similar_indices]['id'].tolist())
     
@@ -168,7 +180,7 @@ def item_based_recommend(base_items, n):
     # If we don't have enough similar items, pad with popular items
     if len(similar_items) < n:
         popular = popular_items_recommend(n - len(similar_items))
-        similar_items.extend(popular['id'].tolist())
+        similar_items.extend(popular)
     return similar_items[:n]
 
 

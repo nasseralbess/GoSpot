@@ -57,7 +57,7 @@ def add_new_user():
 @normal_route.route('/update-preferences', methods=['PUT'])
 def update_user_preferences():
     data = request.json
-    print(f'\n\ndata: {data}\n\n')
+    # print(f'\n\ndata: {data}\n\n')
     errors = updating_preferences.validate(data)
 
     if errors:
@@ -78,7 +78,22 @@ def update_user_preferences():
             }
         }
     )
-
+    vector_db = db['UserVectors']
+    user_vector = get_user_profile(user_id, get_tfidf(), get_coordinate_scaler())
+    # print('vector:',sum(user_vector))
+    # print('in loop:')
+    # for i in range(len(user_vector)):
+    #     print('iter:',i)
+    #     if user_vector[i] != 0:
+    #         print(i,":",user_vector[i], end='\t')
+    vector_db.update_one(
+        {'_id': user_id},
+        {
+            '$set': {
+                'vector': user_vector.tolist()
+            }
+        }
+    )
     if result.modified_count:
         return jsonify({'message': f"Preferences updated for user {user_id}"}), 200
     else:
@@ -163,7 +178,15 @@ def get_next_spot():
         user_id = int(user_id)
     except:
         pass
-
+    vector_db = db['UserVectors']
+    vector= vector_db.find_one({'_id': user_id})['vector']
+    # print('vector:',sum(vector))
+    # print('in loop:')
+    # for i in range(len(vector)):
+    #     print('iter:',i)
+    #     if vector[i] != 0:
+    #         print(i,":",vector[i], end='\t')
+    # print(f'\n\nuser_vector{sum(vector)}\n\n')
     ret = []
     seen = list(user.find_one({'_id': user_id}).get('location_specific', {}).keys())
     
