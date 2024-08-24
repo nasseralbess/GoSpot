@@ -1,5 +1,6 @@
 import React from 'react';
 
+// This will be the page that has the solo recommendations, 
 const Solo: React.FC = () => {
   return (
     <div>

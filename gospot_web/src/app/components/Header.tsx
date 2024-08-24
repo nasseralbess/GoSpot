@@ -2,6 +2,7 @@ import React from 'react';
 import Link from 'next/link';
 import styles from '../styles/Header.module.css'; // Adjust the path if necessary
 
+// Edit the navigation bar so that it is more spaced out
 const Header: React.FC = () => {
   return (
     <header className={styles.header}>
