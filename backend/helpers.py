@@ -132,6 +132,7 @@ def popular_items_recommend(n):
 
 
 def user_based_recommend(user_id, n):
+    print('\n\nUser based recommend\n\n')
     db = get_db()
     user = db['User']
     features = get_features()

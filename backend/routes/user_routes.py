@@ -57,7 +57,7 @@ def add_new_user():
 @normal_route.route('/update-preferences', methods=['PUT'])
 def update_user_preferences():
     data = request.json
-
+    print(f'\n\ndata: {data}\n\n')
     errors = updating_preferences.validate(data)
 
     if errors:
