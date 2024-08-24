@@ -179,6 +179,24 @@ def get_next_spot():
     
     return jsonify({'message': 'No more spots available'}), 404
 
+@normal_route.route('/retrieve-current-preferences', methods=['GET'])
+def retrieve_user_preferences():
+    user_id = request.args.get('user_id')
+    db = current_app.config['db']
+    user_collection = db['User']
+    
+    # Query the user document by user_id
+    user = user_collection.find_one({"_id": int(user_id)})
+    
+    if not user:
+        return jsonify({"error": "User not found"}), 404
+
+    # Assuming 'general_preferences' is the field containing the user's preferences
+    preferences = user.get('general_preferences', {})
+    
+    return jsonify(preferences), 200
+
+
 # Create the route
 @normal_route.route('/retrieve-details', methods=['POST'])
 def retrieve_details():
