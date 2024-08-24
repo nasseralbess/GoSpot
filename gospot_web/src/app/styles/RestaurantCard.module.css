@@ -1,55 +1,156 @@
-/* src/app/styles/RestaurantCard.module.css */
 .card {
-    background-color: #fff;
-    border-radius: 8px;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-    overflow: hidden;
-    transition: transform 0.2s;
-    margin-bottom: 16px;
-    display: flex;
-    flex-direction: row;
-    align-items: center;
-    padding: 12px;
-  }
-  
-  .card:hover {
-    transform: scale(1.02);
-  }
-  
-  .card img {
-    width: 120px; /* Reduce the image width for a more compact look */
+  display: flex;
+  align-items: stretch;
+  width: 80%;
+  max-width: 1200px;
+  margin: 20px auto;
+  border: 1px solid #ddd;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  position: relative;
+  height: 300px; /* Fixed height to ensure consistency */
+  background: linear-gradient(to bottom right, #ffffff, #f9f9f9);
+  transition: box-shadow 0.3s ease, transform 0.3s ease;
+}
+
+.card:hover {
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+  transform: translateY(-4px);
+}
+
+.closeButton {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  font-size: 24px;
+  color: #333;
+  cursor: pointer;
+  z-index: 10;
+  transition: color 0.3s ease;
+}
+
+.closeButton:hover {
+  color: #ff5722; /* Accent color for hover effect */
+}
+
+.cardImageWrapper {
+  position: relative;
+  width: 40%;
+  height: 100%;
+  overflow: hidden; /* Prevent overflow */
+}
+
+.cardImage {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 0 12px 12px 0;
+  transition: transform 0.3s ease;
+}
+
+.card:hover .cardImage {
+  transform: scale(1.05);
+}
+
+.cardContent {
+  padding: 20px;
+  width: 60%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  overflow: hidden;
+  box-sizing: border-box; /* Include padding and border in element's total width and height */
+  position: relative; /* Ensure positioning context for buttons */
+}
+
+.cardTitle {
+  margin: 0;
+  font-size: 24px;
+  font-weight: 700;
+  color: #333;
+  padding-bottom: 12px;
+  cursor: default; /* Prevent text cursor */
+}
+
+.cardDescription {
+  margin: 12px 0;
+  font-size: 16px;
+  color: #666;
+  line-height: 1.6;
+  cursor: default; /* Prevent text cursor */
+}
+
+.ctaButton {
+  display: inline-block;
+  padding: 12px 24px;
+  background-color: #007bff;
+  color: white;
+  border-radius: 6px;
+  text-decoration: none;
+  font-weight: 600;
+  transition: background-color 0.3s ease, transform 0.3s ease;
+  margin-top: 12px; /* Space between buttons */
+  position: absolute;
+  bottom: 40px; /* Space from bottom to ensure separation from More Details button */
+  left: 20px; /* Space from left edge */
+}
+
+.ctaButton:hover {
+  background-color: #0056b3;
+}
+
+.moreDetailsButton {
+  display: inline-block;
+  padding: 8px 16px;
+  background-color: #28a745; /* Green color for the button */
+  color: white;
+  border-radius: 6px;
+  text-decoration: none;
+  font-weight: 600;
+  transition: background-color 0.3s ease;
+  position: absolute;
+  bottom: 10px; /* Space from bottom */
+  right: 10px; /* Space from right edge */
+  font-size: 14px; /* Smaller font size */
+  box-sizing: border-box; /* Ensure button size includes padding and border */
+  z-index: 10; /* Ensure it stays above other content */
+}
+
+.moreDetailsButton:hover {
+  background-color: #218838;
+}
+
+/* Responsive design adjustments */
+@media (max-width: 768px) {
+  .card {
+    flex-direction: column;
+    width: 90%;
     height: auto;
-    border-radius: 8px;
-    object-fit: cover;
-    margin-right: 12px; /* Space between image and text */
   }
-  
-  .card-content {
-    flex: 1;
-    font-size: 0.9em; /* Smaller font size for compactness */
+
+  .cardImageWrapper {
+    width: 100%;
+    height: 200px;
   }
-  
-  .card-title {
-    font-size: 1.2em;
-    margin-bottom: 4px;
-    color: var(--primary-color);
-    font-weight: 600;
+
+  .cardImage {
+    height: 100%;
   }
-  
-  .card-description {
-    color: var(--text-color);
-    margin-bottom: 4px;
-    line-height: 1.2; /* Tighter line spacing */
+
+  .cardContent {
+    width: 100%;
+    padding: 15px; /* Adjusted padding */
+    position: relative; /* Ensure positioning context for buttons */
   }
-  
-  .card a {
-    color: var(--primary-color);
-    text-decoration: none;
-    font-weight: bold;
-    font-size: 0.9em;
+
+  .ctaButton {
+    bottom: 60px; /* Adjust spacing for smaller screens */
   }
-  
-  .card a:hover {
-    text-decoration: underline;
+
+  .moreDetailsButton {
+    font-size: 12px;
+    bottom: 10px;
+    right: 10px;
   }
-  
+}
