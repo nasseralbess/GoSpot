@@ -13,19 +13,20 @@ def create_feature_matrix(df):
     scaler = MinMaxScaler()
     numerical_features = scaler.fit_transform(df[['review_count', 'rating']].fillna(0))
     
+    #go baaaaack to thiiiiis liiine #
     price_dummies = pd.get_dummies(df['price'], prefix='price').fillna(0)
     
     features = np.hstack((tfidf_matrix.toarray(), numerical_features, price_dummies.values))
-    # print('\n\nshape:',features.shape)
+    print('\n\nshape:',features.shape)
     return features, tfidf, scaler
 
 def build_annoy_index(features, n_trees=150):
-    # print(f"Building Annoy index with {features.shape[1]} dimensions...")
+    print(f"Building Annoy index with {features.shape[1]} dimensions...")
     f = features.shape[1]
     t = AnnoyIndex(f, 'angular')
     try:
         for i in range(features.shape[0]):
-            print(f"Adding item {i} to the index")
+            # print(f"Adding item {i} to the index")
             t.add_item(i, features[i])
         print(f"Added {features.shape[0]} items to the index")
         
