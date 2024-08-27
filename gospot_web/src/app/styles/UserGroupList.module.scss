@@ -1,0 +1,30 @@
+.container {
+    // display: grid;
+    // grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+    padding: 20px;
+    align-items: center;
+    
+  }
+  
+  .groupBox {
+    border: 2px solid #0070f3;
+    border-radius: 8px;
+    padding-top: 50px;
+    padding-bottom: 50px;
+    width: 200px;
+    text-align: center;
+    background-color: #f0f0f0;
+    cursor: pointer;
+    transition: background-color 0.3s, transform 0.3s;
+  }
+  
+  .groupBox:hover {
+    cursor: pointer;
+    background-color: #0070f3;
+    color: #fff;
+    transform: scale(1.05);
+  }
+  

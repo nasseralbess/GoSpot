@@ -1,0 +1,34 @@
+.containers {
+    display: flex;
+    width: 100%;
+    height: 80vh;
+    justify-content: space-between; /* Ensures that the two containers take up equal space */
+  }
+  
+  .container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 50%; /* Each container takes up half the screen */
+    padding: 20px;
+  }
+  
+  .groupBox {
+    border: 2px solid #0070f3;
+    border-radius: 8px;
+    padding-top: 50px;
+    padding-bottom: 50px;
+    width: 200px;
+    text-align: center;
+    background-color: #f0f0f0;
+    cursor: pointer;
+    transition: background-color 0.3s, transform 0.3s;
+  }
+  
+  .groupBox:hover {
+    cursor: pointer;
+    background-color: #0070f3;
+    color: #fff;
+    transform: scale(1.05);
+  }
+  

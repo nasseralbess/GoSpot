@@ -1,10 +1,14 @@
 import React from 'react';
+import UserGroupsList from '@/app/components/UserGroupList';
+import { groups } from '@/app/utils/data';
+import GroupActions from '@/app/components/GroupActions';
+import '../app/styles/Group.scss'
 
 const Group: React.FC = () => {
   return (
-    <div>
-      <h1>Group Page</h1>
-      <p>Welcome to the Group page.</p>
+    <div className='containers'>
+      <UserGroupsList groups={groups}></UserGroupsList>
+      <GroupActions></GroupActions>
     </div>
   );
 };
