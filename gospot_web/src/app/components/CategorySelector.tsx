@@ -54,7 +54,7 @@ const CategorySelector = ({ onClose }) => {
     'Mexican', 'Brazilian', 'Peruvian', 'Argentine', 'Colombian', 'Venezuelan',
     'Cuban', 'Puerto Rican', 'Dominican', 'Salvadoran', 'Honduran', 'Nicaraguan',
     'Guatemalan', 'Ecuadorian', 'Bolivian', 'Chilean',
-    'Lebanese', 'Turkish', 'Persian/Iranian', 'Israeli', 'Moroccan', 'Egyptian',
+    'Lebanese', 'Turkish', 'Persian/Iranian', 'Moroccan', 'Egyptian',
     'Syrian', 'Armenian', 'Afghan', 'Iraqi', 'Uzbek', 'Georgian',
     'Ethiopian', 'Nigerian', 'Ghanaian', 'Senegalese', 'South African', 'Eritrean',
     'Somali', 'Kenyan', 'Tanzanian', 'Ugandan',
