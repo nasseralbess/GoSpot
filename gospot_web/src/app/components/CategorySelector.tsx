@@ -43,46 +43,11 @@ const CategorySelector = ({ onClose }) => {
 
   }
 
-  const categories = [
-    'American', 'New American', 'Southern', 'Soul Food', 'Cajun/Creole', 'Tex-Mex',
-    'Chinese', 'Japanese', 'Korean', 'Thai', 'Vietnamese', 'Indian', 'Pakistani', 'Bangladeshi',
-    'Taiwanese', 'Filipino', 'Malaysian', 'Indonesian', 'Singaporean', 'Burmese',
-    'Cambodian', 'Laotian', 'Mongolian', 'Nepalese', 'Sri Lankan', 'Asian Fusion',
-    'Italian', 'French', 'Spanish', 'German', 'Greek', 'British', 'Irish', 'Scottish',
-    'Polish', 'Russian', 'Ukrainian', 'Hungarian', 'Czech', 'Austrian', 'Belgian',
-    'Dutch', 'Swiss', 'Scandinavian', 'Portuguese',
-    'Mexican', 'Brazilian', 'Peruvian', 'Argentine', 'Colombian', 'Venezuelan',
-    'Cuban', 'Puerto Rican', 'Dominican', 'Salvadoran', 'Honduran', 'Nicaraguan',
-    'Guatemalan', 'Ecuadorian', 'Bolivian', 'Chilean',
-    'Lebanese', 'Turkish', 'Persian/Iranian', 'Moroccan', 'Egyptian',
-    'Syrian', 'Armenian', 'Afghan', 'Iraqi', 'Uzbek', 'Georgian',
-    'Ethiopian', 'Nigerian', 'Ghanaian', 'Senegalese', 'South African', 'Eritrean',
-    'Somali', 'Kenyan', 'Tanzanian', 'Ugandan',
-    'Seafood', 'Sushi Bars', 'Fish & Chips', 'Poke',
-    'Fast Food', 'Burgers', 'Pizza', 'Sandwiches', 'Hot Dogs', 'Chicken Wings',
-    'Vegetarian', 'Vegan', 'Raw Food',
-    'Breakfast & Brunch', 'Pancakes', 'Waffles', 'Bagels', 'Donuts',
-    'Bakeries', 'Desserts', 'Ice Cream & Frozen Yogurt', 'Cupcakes', 'Patisserie/Cake Shop', 'Gelato',
-    'Cafes', 'Coffee & Tea', 'Bubble Tea',
-    'Bars', 'Pubs', 'Sports Bars', 'Wine Bars', 'Beer Gardens', 'Cocktail Bars', 'Dive Bars', 'Hookah Bars',
-    'Cheese Shops', 'Butcher', 'Farmers Market', 'Specialty Food', 'Organic Stores', 'Health Markets',
-    'Food Trucks', 'Food Stands', 'Street Vendors',
-    'Grocery', 'International Grocery', 'Convenience Stores',
-    'Nightlife', 'Dance Clubs', 'Karaoke', 'Comedy Clubs', 'Jazz & Blues',
-    'Museums', 'Art Galleries', 'Performing Arts', 'Music Venues', 'Theaters', 'Cinema',
-    'Parks', 'Beaches', 'Hiking', 'Botanical Gardens', 'Playgrounds', 'Dog Parks',
-    'Gyms', 'Yoga', 'Martial Arts', 'Swimming Pools', 'Tennis', 'Basketball Courts', 'Soccer',
-    'Shopping Centers', 'Clothing', 'Shoes', 'Jewelry', 'Books', 'Electronics', 'Home & Garden',
-    'Hair Salons', 'Nail Salons', 'Day Spas', 'Massage',
-    'Hotels', 'Hostels', 'Bed & Breakfast',
-    'Wedding Planning', 'Party & Event Planning', 'Caterers', 'Photographers',
-    'Car Dealers', 'Auto Repair', 'Car Wash', 'Gas Stations',
-    'Lawyers', 'Accountants', 'Real Estate', 'Insurance',
-    'Schools', 'Colleges', 'Tutoring', 'Cooking Classes', 'Art Schools',
-    'Pet Stores', 'Veterinarians', 'Pet Groomers', 'Dog Walkers',
-    'Churches', 'Mosques', 'Synagogues', 'Temples',
-    'Other'
-  ];
+  const categories = 
+    ['American', 'Asian', 'European', 'Latin American', 'Middle Eastern', 'African', 'Seafood', 'Fast Food', 'Vegetarian and Vegan', 'Breakfast and Brunch', 'Bakeries and Desserts', 'Cafes and Coffee Shops', 'Bars and Pubs', 'Specialty Food', 'Food Trucks and Stands', 'Grocery', 'Nightlife', 'Arts and Entertainment', 'Outdoor Activities', 'Fitness and Sports', 'Shopping', 'Beauty and Spas', 'Hotels and Accommodation', 'Event Planning and Services', 'Automotive', 'Professional Services', 'Education', 'Pets', 'Religious Organizations', 'Other']
+
+    
+  ;
 
 
   const handleSearchChange = (e) => {
