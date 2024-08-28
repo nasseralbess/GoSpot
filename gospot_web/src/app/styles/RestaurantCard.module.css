@@ -65,6 +65,22 @@
   position: relative; /* Ensure positioning context for buttons */
 }
 
+
+.selectedCheck {
+  background-color: #d4edda !important; /* Light green background for check */
+}
+
+.selectedX {
+  background-color: #f8d7da !important; /* Light red background for X */
+}
+
+.card:hover {
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+  transform: translateY(-4px);
+}
+
+
+
 .cardTitle {
   margin: 0;
   font-size: 24px;

@@ -1,26 +1,19 @@
-// pages/index.js
-
 import { useState, useEffect } from 'react';
 import Modal from 'react-modal';
 import RestaurantCard from '../app/components/RestaurantCard';
 import { fetchData } from '../app/utils/fetchData';
 import CategorySelector from '../app/components/CategorySelector';
 
-// Set the app element for accessibility (only necessary with react-modal)
 Modal.setAppElement('#__next');
 
-// Fetch data from the backend
 export async function getServerSideProps() {
   try {
-    // Fetch the first set of data
     const idData = await fetchData('http://127.0.0.1:8080/user/get-next-spot?user_id=1', 'GET');
 
-    // Fetch the second set of data using POST
     const data = await fetchData('http://127.0.0.1:8080/user/retrieve-details', 'POST', {}, {
       spotLists: idData,
     });
 
-    // Pass data to the page via props
     return { props: { data } };
   } catch (error) {
     console.error('Error fetching data:', error.message);
@@ -31,18 +24,27 @@ export async function getServerSideProps() {
 export default function Home({ data }) {
   const [modalIsOpen, setModalIsOpen] = useState(false);
   const [selectedCategories, setSelectedCategories] = useState([]);
+  
+  // State to keep track of the user's selection (check or X) for each restaurant
+  const [selections, setSelections] = useState({});
 
+  // Keeping track of user interactions is done here
   useEffect(() => {
-    console.log(data);
-  }, [data]);
+    console.log(("Running here"))
+    console.log(Object.keys(selections).length)
+    console.log(selections)
+    // Check if the user has clicked either check or X for all restaurants
+    if (Object.keys(selections).length === data.length && data.length > 0) {
+      alert('All options clicked');
+    }
+  }, [selections, data.length]);
 
   const openModal = () => {
     setModalIsOpen(true);
   };
 
-  // If close with confirm selection, send data 
   const closeModal = async (categories) => {
-    setSelectedCategories(categories); // Save the selected categories in the parent state
+    setSelectedCategories(categories);
 
     let price;
     switch (categories.priceRange) {
@@ -79,8 +81,11 @@ export default function Home({ data }) {
       alert("Unable to Register data");
       setModalIsOpen(false);
     }
-
-    console.log('Selected Categories:', price, categories.selectedCategories); // Handle the selected categories as needed
+  };
+  // Added more functionalities here
+  // Function to handle user's selection of check or X
+  const handleSelection = (restaurantId, option,timeTaken) => {
+    setSelections(prev => ({ ...prev, [restaurantId]: {option:option,timeTaken:timeTaken} }));
   };
 
   return (
@@ -108,7 +113,13 @@ export default function Home({ data }) {
       <h1>Restaurants in New York</h1>
       <ul>
         {data.map((restaurant) => (
-          <RestaurantCard key={restaurant._id} restaurant={restaurant} />
+          // Pass the selection state and handler to each RestaurantCard
+          <RestaurantCard
+            key={restaurant._id}
+            restaurant={restaurant}
+            onSelection={handleSelection}
+            isSelected={selections[restaurant._id]}
+          />
         ))}
       </ul>
       <button>Refresh Everything</button>
