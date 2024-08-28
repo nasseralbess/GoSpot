@@ -1,3 +1,4 @@
+/* Existing Styles */
 .card {
   display: flex;
   align-items: stretch;
@@ -99,7 +100,6 @@
 .ctaButton:hover {
   background-color: #0056b3;
 }
-
 .moreDetailsButton {
   display: inline-block;
   padding: 8px 16px;
@@ -115,10 +115,97 @@
   font-size: 14px; /* Smaller font size */
   box-sizing: border-box; /* Ensure button size includes padding and border */
   z-index: 10; /* Ensure it stays above other content */
+  cursor: pointer; /* Change cursor to pointer */
 }
 
 .moreDetailsButton:hover {
   background-color: #218838;
+}
+
+/* Enhanced Modal Styles */
+.modal {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  right: auto;
+  bottom: auto;
+  margin-right: -50%;
+  transform: translate(-50%, -50%);
+  width: 90%;
+  max-width: 700px; /* Increased max width */
+  background-color: #f8f9fa; /* Light background for better contrast */
+  border-radius: 12px;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2); /* More pronounced shadow */
+  padding: 30px; /* Increased padding for a more spacious layout */
+  outline: none;
+  display: flex;
+  flex-direction: column;
+}
+
+.modalOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.6); /* Darker overlay for better contrast */
+  z-index: 1000;
+}
+
+.modalHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  border-bottom: 2px solid #e9ecef; /* Subtle border for header separation */
+  padding-bottom: 10px;
+}
+
+.modalTitle {
+  margin: 0;
+  font-size: 28px; /* Larger title for emphasis */
+  font-weight: 700;
+  color: #333;
+}
+
+.modalCloseButton {
+  font-size: 28px; /* Larger close button for easier access */
+  color: #333;
+  background: none;
+  border: none;
+  cursor: pointer;
+  transition: color 0.3s ease;
+}
+
+.modalCloseButton:hover {
+  color: #ff5722;
+}
+
+.modalContent {
+  font-size: 18px; /* Slightly larger text for readability */
+  color: #555; /* Darker text color for better contrast */
+  line-height: 1.8;
+  display: flex;
+  flex-direction: column;
+  gap: 15px; /* Increased space between elements */
+}
+
+.modalSection {
+  margin-bottom: 20px; /* Space between sections */
+  padding-bottom: 20px; /* Padding for section */
+  border-bottom: 1px solid #dee2e6; /* Divider between sections */
+}
+
+.modalAddress {
+  font-size: 16px; /* Slightly larger address text */
+  font-weight: 600; /* Bolder address text */
+  margin-bottom: 15px;
+}
+
+.ctaButton {
+  align-self: flex-start; /* Align button to the start of the container */
+  margin-top: 20px; /* Space from other content */
+  position: static; /* Remove absolute positioning */
 }
 
 /* Responsive design adjustments */
@@ -153,4 +240,147 @@
     bottom: 10px;
     right: 10px;
   }
+
+  .modal {
+    width: 95%;
+    max-width: 95%;
+    padding: 20px; /* Adjust padding for smaller screens */
+  }
+
+  .modalTitle {
+    font-size: 24px; /* Adjust title size for smaller screens */
+  }
+
+  .modalContent {
+    font-size: 16px; /* Adjust text size for smaller screens */
+  }
+
+  .modalCloseButton {
+    font-size: 24px; /* Adjust close button size */
+  }
+}
+
+/* Existing Styles */
+
+.shareButton,
+.saveButton {
+  display: inline-block;
+  padding: 8px 16px;
+  border-radius: 6px;
+  text-decoration: none;
+  font-weight: 600;
+  transition: background-color 0.3s ease;
+  margin-right: 10px; /* Space between buttons */
+  cursor: pointer; /* Change cursor to pointer */
+}
+
+.shareButton {
+  background-color: #17a2b8; /* Teal color for share button */
+  color: white;
+}
+
+.shareButton:hover {
+  background-color: #117a8b;
+}
+
+.saveButton {
+  background-color: #ffc107; /* Yellow color for save button */
+  color: black;
+}
+
+.saveButton:hover {
+  background-color: #e0a800;
+}
+
+
+/* Modal Styles */
+/* Modal Styles */
+.modal {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  right: auto;
+  bottom: auto;
+  margin-right: -50%;
+  transform: translate(-50%, -50%);
+  width: 90%;
+  max-width: 800px; /* Increased max width for better spacing */
+  background-color: #f8f9fa; /* Light background for better contrast */
+  border-radius: 12px;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2); /* More pronounced shadow */
+  padding: 30px; /* Increased padding for a more spacious layout */
+  outline: none;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between; /* Space between content and buttons */
+}
+
+.modalContent {
+  font-size: 18px; /* Slightly larger text for readability */
+  color: #555; /* Darker text color for better contrast */
+  line-height: 1.8;
+  display: flex;
+  flex-direction: column;
+  gap: 20px; /* Space between sections */
+}
+
+.modalSection {
+  margin-bottom: 20px; /* Space between sections */
+  padding-bottom: 20px; /* Padding for section */
+  border-bottom: 1px solid #dee2e6; /* Divider between sections */
+}
+
+.modalFooter {
+  display: flex;
+  justify-content: space-between; /* Space out buttons */
+  align-items: center;
+  margin-top: 10px; /* Space from content */
+}
+
+.modalButtons {
+  display: flex;
+  gap: 10px; /* Space between buttons */
+}
+
+.modalButton {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px; /* Size for buttons */
+  height: 40px; /* Size for buttons */
+  border-radius: 50%;
+  background-color: #e9ecef; /* Light background for buttons */
+  color: #333; /* Dark text color */
+  font-size: 20px; /* Icon size */
+  border: none;
+  cursor: pointer; /* Pointer cursor */
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+.modalButton:hover {
+  background-color: #dee2e6;
+  color: #007bff; /* Accent color on hover */
+}
+
+.modalButton:active {
+  background-color: #ced4da; /* Darker background on click */
+}
+
+.modalCtaButton {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 10px 20px; /* Padding for the button */
+  background-color: #007bff; /* Primary color */
+  color: white; /* Text color */
+  border-radius: 6px; /* Rounded corners */
+  text-decoration: none; /* Remove underline */
+  font-weight: 600;
+  border: none;
+  cursor: pointer; /* Pointer cursor */
+  transition: background-color 0.3s ease;
+}
+
+.modalCtaButton:hover {
+  background-color: #0056b3; /* Darker primary color on hover */
 }

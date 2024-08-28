@@ -14,7 +14,9 @@ const Header: React.FC = () => {
           <Link href="/solo" className={styles.navLink}>Solo</Link>
           <Link href="/group" className={styles.navLink}>Group</Link>
           <Link href="/about-us" className={styles.navLink}>About Us</Link>
+          <Link href="/Saved" className={styles.navLink}>Saved</Link>
           <Link href="/profile" className={styles.navLink}>Profile</Link>
+          
         </nav>
       </div>
     </header>
