@@ -8,7 +8,7 @@ const RestaurantCard = ({ restaurant, onSelection, isSelected }) => {
   const [modalIsOpen, setModalIsOpen] = useState(false);
   const [totalTimeSpent, setTotalTimeSpent] = useState(0); // State to track total time spent on the modal
   const [selection, setSelection] = useState(null); // State to track selection (check or X)
-  const [cardClass, setCardClass] = useState(`${styles.card}`); // Initialize the cardClass with the default class
+  const [cardClass, setCardClass] = useState(`${styles.card} ${styles.selectedX}`); // Initialize the cardClass with the default class
   const timerRef = useRef(null); // Ref to track the time when the modal is opened
 
   // Function to open the modal and start the timer
@@ -24,9 +24,6 @@ const RestaurantCard = ({ restaurant, onSelection, isSelected }) => {
 
     setTotalTimeSpent((prevTime) => prevTime + timeSpent); // Accumulate the time spent
     setModalIsOpen(false);
-
-    console.log(`User viewed ${restaurant.name} for ${timeSpent} seconds.`);
-    console.log(`Total time spent on ${restaurant.name}: ${totalTimeSpent + timeSpent} seconds.`);
   };
 
   // Function to handle selection of check or X, passing the total time
@@ -60,6 +57,20 @@ const RestaurantCard = ({ restaurant, onSelection, isSelected }) => {
         <p>Phone: {restaurant.display_phone}</p>
         <p>Distance: {restaurant.distance.toFixed(2)} meters</p>
         <p>Transactions: {restaurant.transactions.join(', ')}</p>
+        <div className={styles.selectionButtons}>
+            <button
+              className={`${styles.selectionButton} ${isSelected === 'check' ? styles.selected : ''}`}
+              onClick={(event) => handleSelection(event, 'check')}
+            >
+              ✔️
+            </button>
+            <button
+              className={`${styles.selectionButton} ${isSelected === 'x' ? styles.selected : ''}`}
+              onClick={(event) => handleSelection(event, 'x')}
+            >
+              ❌
+            </button>
+          </div>
         <a
           href={restaurant.url}
           target="_blank"
@@ -117,6 +128,7 @@ const RestaurantCard = ({ restaurant, onSelection, isSelected }) => {
               ❌
             </button>
           </div>
+
           <a
             href={restaurant.url}
             target="_blank"

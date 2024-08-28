@@ -6,38 +6,61 @@ import CategorySelector from '../app/components/CategorySelector';
 
 Modal.setAppElement('#__next');
 
-export async function getServerSideProps() {
-  try {
-    const idData = await fetchData('http://127.0.0.1:8080/user/get-next-spot?user_id=1', 'GET');
-
-    const data = await fetchData('http://127.0.0.1:8080/user/retrieve-details', 'POST', {}, {
-      spotLists: idData,
-    });
-
-    return { props: { data } };
-  } catch (error) {
-    console.error('Error fetching data:', error.message);
-    return { props: { data: [], error: error.message || 'Failed to load data' } };
-  }
-}
-
-export default function Home({ data }) {
+export default function Home() {
+  const [data, setData] = useState([]); // State to hold restaurant data
   const [modalIsOpen, setModalIsOpen] = useState(false);
   const [selectedCategories, setSelectedCategories] = useState([]);
   
   // State to keep track of the user's selection (check or X) for each restaurant
-  const [selections, setSelections] = useState({});
+  const [interaction, setinteraction] = useState({});
+
+  // Fetching data for the cards
+  const fetchCardData = async () => {
+    try {
+      const idData = await fetchData('http://127.0.0.1:8080/user/get-next-spot?user_id=1', 'GET');
+      const detailsData = await fetchData('http://127.0.0.1:8080/user/retrieve-details', 'POST', {}, {
+        spotLists: idData,
+      });
+      setData(detailsData);
+    } catch (error:any) {
+      console.error('Error fetching data:', error.message);
+    }
+  };
+
+  // Fetch data when the component mounts
+  useEffect(() => {
+    fetchCardData();
+  }, []); // Empty dependency array means this effect runs once when the component mounts
 
   // Keeping track of user interactions is done here
   useEffect(() => {
-    console.log(("Running here"))
-    console.log(Object.keys(selections).length)
-    console.log(selections)
+    console.log("Running here");
+    console.log(Object.keys(interaction).length);
+    console.log(interaction);
     // Check if the user has clicked either check or X for all restaurants
-    if (Object.keys(selections).length === data.length && data.length > 0) {
-      alert('All options clicked');
+    if (Object.keys(interaction).length === data.length && data.length > 0) {
+      // alert('All options clicked');
+      sendingInteractions()
+
     }
-  }, [selections, data.length]);
+  }, [interaction, data.length]);
+
+  // THIS IS WHERE YOU ARE SENDING YOUR SPOT PREFENCES, OR THE DATA THAT WOULD SAY YOU LIKE OR NOT
+  const sendingInteractions = async () => {
+    const interactionResponse = await fetchData('http://127.0.0.1:8080/user/record-interaction', 'POST',{}, 
+      {
+        'user_id': 1,
+        interaction
+      }
+    )
+    // console.log( {
+    //   'user_id': 1,
+    //   'interaction' : {interaction}
+    // })
+
+  }
+  
+ 
 
   const openModal = () => {
     setModalIsOpen(true);
@@ -76,16 +99,22 @@ export default function Home({ data }) {
 
       console.log(data);
       setModalIsOpen(false);
+      await fetchCardData()
     } catch (error) {
       console.error('Error fetching data:', error.message);
       alert("Unable to Register data");
       setModalIsOpen(false);
     }
   };
-  // Added more functionalities here
+
   // Function to handle user's selection of check or X
-  const handleSelection = (restaurantId, option,timeTaken) => {
-    setSelections(prev => ({ ...prev, [restaurantId]: {option:option,timeTaken:timeTaken} }));
+  const handleSelection = (restaurantId, option, timeTaken) => {
+    let toSaveOrNot = 'False'
+    if(option == 'check'){
+      toSaveOrNot = 'True'
+    }
+    setinteraction(prev => ({ ...prev, [restaurantId]: 
+      { "time_viewing": timeTaken, "pressed_save": toSaveOrNot }}));
   };
 
   return (
@@ -118,11 +147,11 @@ export default function Home({ data }) {
             key={restaurant._id}
             restaurant={restaurant}
             onSelection={handleSelection}
-            isSelected={selections[restaurant._id]}
+            isSelected={interaction[restaurant._id]}
           />
         ))}
       </ul>
-      <button>Refresh Everything</button>
+      <button onClick={() => window.location.reload()}>Refresh Everything</button>
     </div>
   );
 }

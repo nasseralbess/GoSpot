@@ -29,9 +29,9 @@ class UserSchema(Schema):
 # For adding interactions 
 class InteractionSchema(Schema):
     time_viewing = fields.Float(required=True)
-    pressed_share = fields.Boolean(required=True)
+    pressed_share = fields.Boolean(required=False)
     pressed_save = fields.Boolean(required=True)
-    rating = fields.Float(required=True, validate=validate.Range(min=0, max=5))
+    rating = fields.Float(required=False, validate=validate.Range(min=0, max=5))
 
 class UserInteractionSchema(Schema):
     user_id = fields.Int(required=True)

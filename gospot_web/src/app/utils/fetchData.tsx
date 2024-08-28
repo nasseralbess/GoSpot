@@ -1,6 +1,6 @@
 // utils/fetchData.js
 
-export async function fetchData(url, method, headers = {}, body = null) {
+export async function fetchData(url:string, method:any, headers = {}, body:any = null) {
     try {
         const options = {
             method,
