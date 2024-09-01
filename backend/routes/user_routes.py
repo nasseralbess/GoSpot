@@ -187,7 +187,8 @@ def get_next_spot():
     #     if vector[i] != 0:
     #         print(i,":",vector[i], end='\n')
     # print(f'\n\nuser_vector{sum(vector)}\n\n')
-    ret = []
+
+    ret = set()  # Use a set to ensure unique items
     seen = list(user.find_one({'_id': user_id}).get('location_specific', {}).keys())
     
     if not next_spot:
@@ -196,10 +197,10 @@ def get_next_spot():
     for id in next_spot:
         # print (id, end = "\n")
         if id not in seen:
-            ret.append(id)
+            ret.add(id)
     
     if ret:
-        return jsonify(ret), 200
+        return jsonify(list(ret)), 200
     
     return jsonify({'message': 'No more spots available'}), 404
 

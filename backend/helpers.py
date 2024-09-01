@@ -4,6 +4,8 @@ from sklearn.metrics.pairwise import cosine_similarity
 import pandas as pd
 import random
 from annoy import AnnoyIndex
+from random import uniform
+
 # from routes.user_routes import retrieve_user_preferences, update_user_preferences
 def get_db():
     return current_app.config['db']
@@ -61,7 +63,7 @@ def get_user_profile(user_id, tfidf, coordinate_scaler):
             user_vector[tfidf.vocabulary_[mapped_category]] = 1
     print('vector:',sum(user_vector))
     
-    
+
     price_index = features.shape[1] - 4 + len(general_prefs['price']) -1 
     user_vector[price_index] = 1
     
@@ -133,25 +135,47 @@ def popular_items_recommend(n):
     return recommended_ids
 
 
-def user_based_recommend(user_id, n):
-    # print('\n\nUser based recommend\n\n')
-    db = get_db()
-    user = db['User']
-    features = get_features()
-    df = get_df()
-    user_id = int(user_id)
+def user_based_recommend(user_id, n, randomness_factor=0.5):
+    """
+    Recommend items to a user based on user similarity scores with added randomness.
+
+    Parameters:
+    - user_id: The ID of the user to whom we want to recommend items.
+    - n: The number of items to recommend.
+    - randomness_factor: The magnitude of the randomness added to the scores. 
+      Default is 0.1. Increase this to add more randomness.
+
+    Returns:
+    - A list of recommended item IDs.
+    """
+    db = get_db()  # Get the database connection
+    user = db['User']  # Reference to the 'User' collection
+    features = get_features()  # Get the item feature matrix
+    df = get_df()  # Get the DataFrame containing item details
+
+    user_id = int(user_id)  # Ensure user_id is an integer
+
+    # If user_id is not found in the database, return popular items
     if user_id not in user.distinct('_id'):
-        
         return popular_items_recommend(n)
     
+    # Retrieve the user's profile vector from the 'UserVectors' collection
     user_profile = db['UserVectors'].find_one({'_id': user_id})['vector']
     
+    # Compute cosine similarity scores between the user's profile and item features
     scores = cosine_similarity([user_profile], features)[0]
-    top_indices = scores.argsort()[-n:][::-1]
+
+    # Add randomness to the scores to introduce diversity in recommendations
+    random_noise = np.random.uniform(-randomness_factor, randomness_factor, size=scores.shape)
+    scores_with_randomness = scores + random_noise
+    
+    # Get the top n item indices based on the modified scores
+    top_indices = scores_with_randomness.argsort()[-n:][::-1]
+    
+    # Retrieve the IDs of the recommended items
     recommended_ids = df.iloc[top_indices]['id'].tolist()
     
     return recommended_ids
-
 
 def item_based_recommend(base_items, n):
     df = get_df()
