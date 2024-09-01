@@ -25,6 +25,7 @@ def add_new_user():
 
 
     db = current_app.config['db']
+
     user = db['User']
 
     # User generated from logto's 
@@ -66,7 +67,7 @@ def update_user_preferences():
     user_id = data.get('user_id')
     new_preferences = data.get('new_preferences')
 
-    db = current_app.config['db']
+    db = get_db()
     user = db['User']
 
     result = user.update_one(
@@ -119,7 +120,7 @@ def record_spot_interaction():
     # spot_id = data.get('spot_id')
     interactions = data.get('interaction')
     
-    db = current_app.config['db']
+    db = get_db()
     user = db['User']
 
     update_data = {
@@ -149,7 +150,7 @@ def update_user_coordinates():
     user_id = data.get('user_id')
     new_coordinates = data.get('new_coordinates')
 
-    db = current_app.config['db']
+    db = get_db()
     user = db['User']
 
     result = user.update_one(
@@ -172,7 +173,7 @@ def update_user_coordinates():
 def get_next_spot():
     user_id = request.args.get('user_id')
     next_spot = get_next_items(user_id)
-    db = current_app.config['db']
+    db = get_db()
     user = db['User']
     try:
         user_id = int(user_id)
@@ -207,7 +208,7 @@ def get_next_spot():
 @normal_route.route('/retrieve_current_preferences', methods=['GET'])
 def retrieve_user_preferences():
     user_id = request.args.get('user_id')
-    db = current_app.config['db']
+    db = get_db()
     user_collection = db['User']
     
     # Query the user document by user_id
@@ -237,7 +238,7 @@ def retrieve_details():
     spotLists = data['spotLists']
 
     # Connect to the database
-    db = current_app.config['db']
+    db = get_db()
     spots = db['Spot']
 
     # Query to find documents with the specified IDs
@@ -251,24 +252,38 @@ def retrieve_details():
 
 @normal_route.route('/get_group_spot', methods=['GET'])
 def get_next_group_spot():
-    user_ids = request.args.getlist('user_ids')
-    # print('\n\n user_ids:',user_ids,'\n\n')
-    group_spot = get_group_recommendation(user_ids)
+    group_id = request.args.get('group_id')
+    groups_collection = get_db()['Groups']
+    try:
+        group = groups_collection.find_one({'_id': group_id})
+        if group is None:
+            return jsonify({'error': 'Group not found'}), 404
+
+        user_ids = group.get('members', [])
+
+        print('\n\n user_ids:',user_ids,'\n\n')
+        group_spot = get_group_recommendation(user_ids)
     
-    if group_spot is not None:
-        return jsonify(group_spot), 200
-    else:
-        return jsonify({'message': 'No group spot available'}), 404
+
+        if group_spot is not None:
+            return jsonify(group_spot), 200
+        else:
+            return jsonify({'message': 'No group spot available'}), 404
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+    
 
 
 @normal_route.route('/create_group', methods=['POST'])
 def create_group():
     data = request.json
     group_id = data.get('group_id')
-    groups = current_app.config['db']['Group']
+    group_name = data.get('group_name')
+    groups = get_db()['Groups']
     groups.insert_one({
         '_id': group_id,
-        'members': [data.get('creator')]
+        'members': [data.get('creator')],
+        'group_name': group_name
     })
     return jsonify({'group created': group_id}), 200
 
@@ -279,7 +294,7 @@ def add_to_group():
     data = request.json
     group_id = data.get('group_id')
     user_id = data.get('user_id')
-    groups = current_app.config['db']['Group']
+    groups = current_app.config['db']['Groups']
     groups.update_one(
         {'_id': group_id},
         {
