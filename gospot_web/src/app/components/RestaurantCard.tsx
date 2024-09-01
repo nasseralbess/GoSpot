@@ -6,43 +6,38 @@ import { faShareSquare, faBookmark, faStar } from '@fortawesome/free-solid-svg-i
 
 const RestaurantCard = ({ restaurant, onSelection, isSelected }) => {
   const [modalIsOpen, setModalIsOpen] = useState(false);
-  const [totalTimeSpent, setTotalTimeSpent] = useState(0); // State to track total time spent on the modal
-  const [selection, setSelection] = useState(null); // State to track selection (check or X)
-  const [cardClass, setCardClass] = useState(`${styles.card} ${styles.selectedX}`); // Initialize the cardClass with the default class
-  const timerRef = useRef(null); // Ref to track the time when the modal is opened
+  const [totalTimeSpent, setTotalTimeSpent] = useState(0); 
+  const [selection, setSelection] = useState(null); 
+  const [cardClass, setCardClass] = useState(`${styles.card} ${styles.selectedX}`); 
+  const timerRef = useRef(null); 
 
-  // Function to open the modal and start the timer
   const openModal = () => {
     setModalIsOpen(true);
-    timerRef.current = Date.now(); // Start the timer when the modal is opened
+    timerRef.current = Date.now(); 
   };
 
-  // Function to close the modal and calculate the time spent
   const closeModal = (event) => {
-    event.stopPropagation(); // Prevent click event from propagating to parent elements
-    const timeSpent = (Date.now() - timerRef.current) / 1000; // Calculate time spent in seconds
-
-    setTotalTimeSpent((prevTime) => prevTime + timeSpent); // Accumulate the time spent
+    event.stopPropagation(); 
+    const timeSpent = (Date.now() - timerRef.current) / 1000; 
+    setTotalTimeSpent((prevTime) => prevTime + timeSpent); 
     setModalIsOpen(false);
   };
 
-  // Function to handle selection of check or X, passing the total time
   const handleSelection = (event, option) => {
-    event.stopPropagation(); // Prevent click event from propagating to parent elements
-    setSelection(option); // Set the selection state to either 'check' or 'x'
-    onSelection(restaurant._id, option, totalTimeSpent); // Pass the selection to the parent component
+    event.stopPropagation(); 
+    setSelection(option); 
+    onSelection(restaurant._id, option, totalTimeSpent); 
   };
 
-  // useEffect to update the card class based on the selection
   useEffect(() => {
     if (selection === 'check') {
       setCardClass(`${styles.card} ${styles.selectedCheck}`);
     } else if (selection === 'x') {
       setCardClass(`${styles.card} ${styles.selectedX}`);
     } else {
-      setCardClass(styles.card); // Reset to default class if no selection
+      setCardClass(styles.card); 
     }
-  }, [selection]); // Dependency array: run this effect when `selection` changes
+  }, [selection]); 
 
   return (
     <li onClick={openModal} className={cardClass}>
@@ -54,32 +49,20 @@ const RestaurantCard = ({ restaurant, onSelection, isSelected }) => {
         <p className={styles.cardDescription}>
           {restaurant.location.display_address.join(', ')}
         </p>
-        <p>Phone: {restaurant.display_phone}</p>
-        <p>Distance: {restaurant.distance.toFixed(2)} meters</p>
-        <p>Transactions: {restaurant.transactions.join(', ')}</p>
         <div className={styles.selectionButtons}>
-            <button
-              className={`${styles.selectionButton} ${isSelected === 'check' ? styles.selected : ''}`}
-              onClick={(event) => handleSelection(event, 'check')}
-            >
-              ✔️
-            </button>
-            <button
-              className={`${styles.selectionButton} ${isSelected === 'x' ? styles.selected : ''}`}
-              onClick={(event) => handleSelection(event, 'x')}
-            >
-              ❌
-            </button>
-          </div>
-        <a
-          href={restaurant.url}
-          target="_blank"
-          rel="noopener noreferrer"
-          className={styles.ctaButton}
-          onClick={(event) => event.stopPropagation()}
-        >
-          Visit Yelp Page
-        </a>
+          <button
+            className={`${styles.selectionButton} ${isSelected === 'check' ? styles.selected : ''}`}
+            onClick={(event) => handleSelection(event, 'check')}
+          >
+            ✔️
+          </button>
+          <button
+            className={`${styles.selectionButton} ${isSelected === 'x' ? styles.selected : ''}`}
+            onClick={(event) => handleSelection(event, 'x')}
+          >
+            ❌
+          </button>
+        </div>
         <button
           onClick={(event) => {
             event.stopPropagation();
@@ -113,7 +96,6 @@ const RestaurantCard = ({ restaurant, onSelection, isSelected }) => {
           </div>
         </div>
         <div className={styles.modalFooter}>
-          {/* Selection buttons: check and X */}
           <div className={styles.selectionButtons}>
             <button
               className={`${styles.selectionButton} ${isSelected === 'check' ? styles.selected : ''}`}
@@ -128,7 +110,6 @@ const RestaurantCard = ({ restaurant, onSelection, isSelected }) => {
               ❌
             </button>
           </div>
-
           <a
             href={restaurant.url}
             target="_blank"
