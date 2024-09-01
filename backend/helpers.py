@@ -161,7 +161,6 @@ def user_based_recommend(user_id, n, randomness_factor=0.5):
     
     # Retrieve the user's profile vector from the 'UserVectors' collection
     user_profile = db['UserVectors'].find_one({'_id': user_id})['vector']
-    
     # Compute cosine similarity scores between the user's profile and item features
     scores = cosine_similarity([user_profile], features)[0]
 
