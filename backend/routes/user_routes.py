@@ -13,7 +13,6 @@ adding_user_schema = UserSchema()
 updating_preferences = UpdatePreferencesSchema()
 
 # Adds a user, and fail if user already exists
-# Works perfectly fine, Validation works 
 @normal_route.route('/add_user', methods=['POST'])
 def add_new_user():
     data = request.json
@@ -53,7 +52,7 @@ def add_new_user():
     })
     return jsonify({'message': f"New user {user_id} added successfully"}), 201
 
-# Works perfectly fine 
+
 # Updates the entire preferences
 @normal_route.route('/update_preferences', methods=['PUT'])
 def update_user_preferences():
@@ -81,12 +80,8 @@ def update_user_preferences():
     )
     vector_db = db['UserVectors']
     user_vector = get_user_profile(user_id, get_tfidf(), get_coordinate_scaler())
-    # print('vector:',sum(user_vector))
-    # print('in loop:')
-    # for i in range(len(user_vector)):
-    #     print('iter:',i)
-    #     if user_vector[i] != 0:
-    #         print(i,":",user_vector[i], end='\t')
+   
+
     vector_db.update_one(
         {'_id': user_id},
         {
@@ -102,7 +97,6 @@ def update_user_preferences():
 
 
     
-# Validation good 
 # Recording interactions of places for users 
 @normal_route.route('/record_interaction', methods=['POST'])
 def record_spot_interaction():
@@ -179,16 +173,7 @@ def get_next_spot():
         user_id = int(user_id)
     except:
         pass
-    # vector_db = db['UserVectors']
-    # vector= vector_db.find_one({'_id': user_id})['vector']
-    # print('vector:',sum(vector))
-    # print('in loop:')
-    # for i in range(len(vector)):
-    #     print('iter:',i)
-    #     if vector[i] != 0:
-    #         print(i,":",vector[i], end='\n')
-    # print(f'\n\nuser_vector{sum(vector)}\n\n')
-
+   
     ret = set()  # Use a set to ensure unique items
     seen = list(user.find_one({'_id': user_id}).get('location_specific', {}).keys())
     
@@ -196,7 +181,6 @@ def get_next_spot():
         return jsonify({'message': 'No more spots available'}), 404
     
     for id in next_spot:
-        # print (id, end = "\n")
         if id not in seen:
             ret.add(id)
     
@@ -226,13 +210,7 @@ def retrieve_user_preferences():
 # Create the route
 @normal_route.route('/retrieve_details', methods=['POST'])
 def retrieve_details():
-    # schema = SpotListSchema()
-    # ADD VALIDATION
-    # try:
-    #     # Validate the input data
-    #     data = schema.load(request.json)
-    # except ValidationError as err:
-    #     return jsonify(err.messages), 400
+    
     data = request.json
     # Extract the list of spot IDs
     spotLists = data['spotLists']
@@ -250,6 +228,12 @@ def retrieve_details():
 
 
 
+
+
+#
+#
+#Group Section
+#
 @normal_route.route('/get_group_spot', methods=['GET'])
 def get_next_group_spot():
     group_id = request.args.get('group_id')
