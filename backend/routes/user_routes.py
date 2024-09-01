@@ -244,8 +244,7 @@ def get_next_group_spot():
             return jsonify({'error': 'Group not found'}), 404
 
         user_ids = group.get('members', [])
-
-        print('\n\n user_ids:',user_ids,'\n\n')
+        
         group_spot = get_group_recommendation(user_ids)
     
 
@@ -289,5 +288,79 @@ def add_to_group():
     )
     return jsonify({'message': f"User {user_id} added to group {group_id}"}), 200
 
+@normal_route.route('/record_interaction_group', methods=['POST'])
+def record_spot_interaction_group():
+    """
+    Record spot interactions for all users in a group if pressed_save is True.
+    
+    This endpoint accepts interaction data for a specific group and updates the 
+    interactions for all group members in the database, only if 'pressed_save' is True.
+    
+    Returns:
+        JSON response indicating the success or failure of the operation.
+    """
 
+    data = request.json
 
+    # Data validation
+   
+    group_id = data.get('group_id')
+    if not group_id:
+        return jsonify({'error': 'Group ID is required'}), 400
+
+    groups_collection = get_db()['Groups']
+    
+    try:
+        # Find the group in the database
+        group = groups_collection.find_one({'_id': group_id})
+        if group is None:
+            return jsonify({'error': 'Group not found'}), 404
+
+        # Retrieve the list of user IDs from the group
+        user_ids = group.get('members', [])
+        if not user_ids:
+            return jsonify({'error': 'No members found in the group'}), 404
+
+        interactions = data.get('interaction', {})
+        if not interactions:
+            return jsonify({'error': 'No interaction data provided'}), 400
+
+        # Prepare update data only for spots where 'pressed_save' is 'True'
+        update_data = {
+            '$set': {
+                'last_active': datetime.now()
+            }
+        }
+
+        # Filter interactions to only include those with 'pressed_save' set to 'True'
+        for spot_id, interaction in interactions.items():
+            if interaction.get('pressed_save') == "True":
+                # Only record 'pressed_save' field
+                update_data['$set'][f'location_specific.{spot_id}.pressed_save'] = "True"
+
+        if len(update_data['$set']) == 1:  # Only 'last_active' was set, meaning no 'pressed_save' was True
+            return jsonify({'message': 'No spots to update as pressed_save is not True for any spot'}), 200
+
+        # Get the User collection to update each user
+        user_collection = get_db()['User']
+
+        # Update interactions for all group members
+        for user_id in user_ids:
+            # Check if user exists in the database
+            if user_collection.find_one({'_id': int(user_id)}) is None:
+                return jsonify({'error': f'User {user_id} not found'}), 404
+
+            result = user_collection.update_one(
+                {'_id': int(user_id)},
+                update_data
+            )
+
+            if result.modified_count == 0:
+                return jsonify({'error': f'No changes made for user {user_id}'}), 404
+
+        return jsonify({'message': 'Interaction recorded successfully for all group members where pressed_save is True'}), 200
+
+    except Exception as e:
+        error_message = f"An error occurred while recording interactions: {str(e)}"
+        print(error_message)  # Optional: log the error message
+        return jsonify({'error': error_message}), 500
