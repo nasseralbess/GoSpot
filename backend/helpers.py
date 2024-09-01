@@ -4,7 +4,7 @@ from sklearn.metrics.pairwise import cosine_similarity
 import pandas as pd
 import random
 from annoy import AnnoyIndex
-
+# from routes.user_routes import retrieve_user_preferences, update_user_preferences
 def get_db():
     return current_app.config['db']
 
@@ -36,6 +36,7 @@ def get_annoy_index():
     return annoy_index
 
 def get_user_profile(user_id, tfidf, coordinate_scaler):
+    print("Yousef")
     db = get_db()
     user = db['User']
     features = get_features()
@@ -47,33 +48,24 @@ def get_user_profile(user_id, tfidf, coordinate_scaler):
     
     user_vector = np.zeros(features.shape[1])
     user_data = list(user.find({'_id': user_id}))[0]
-    # print('here')
+    
     general_prefs = user_data['general_preferences']
     for category in general_prefs['categories']:
-        # print('category:', category)    
+        
         mapped_category = reverse_category_mapping.get(category, 'other').lower()
-        # print('mapped_category:', mapped_category)
-        # print('vocab:', tfidf.vocabulary_) 
+        print('mapped_category:', mapped_category)
+        print('vocab:', tfidf.vocabulary_) 
         if mapped_category in tfidf.vocabulary_:
-            # print('edited user vector')
-            # print('idx:',tfidf.vocabulary_[mapped_category])
+            print('edited user vector')
+            print('idx:',tfidf.vocabulary_[mapped_category])
             user_vector[tfidf.vocabulary_[mapped_category]] = 1
-    # print('vector:',sum(user_vector))
-    # print('in loop:')
-    # for i in range(len(user_vector)):
-    #     print('iter:',i)
-    #     if user_vector[i] != 0:
-    #         print(i,":",user_vector[i], end='\t')
-    price_index = features.shape[1] - 4 + len(general_prefs['price'])
+    print('vector:',sum(user_vector))
+    
+    
+    price_index = features.shape[1] - 4 + len(general_prefs['price']) -1 
     user_vector[price_index] = 1
     
-    # user_coords = np.array(general_prefs['coordinates']).reshape(1, -1)
-    
-    # # Create a dummy array with 4 features to match the scaler's expected input
-    # dummy_coords = np.zeros((1, 4))
-    # dummy_coords[0, 2:] = user_coords  # Assuming latitude and longitude are the last two features
-    # scaled_coords = coordinate_scaler.transform(dummy_coords)
-    # user_vector[-6:-4] = scaled_coords[0, 2:] 
+   
 
     for spot_id, spot_data in user_data['location_specific'].items():
         spot_index = df[df['id'] == spot_id].index
@@ -149,14 +141,12 @@ def user_based_recommend(user_id, n):
     df = get_df()
     user_id = int(user_id)
     if user_id not in user.distinct('_id'):
-        # print(user.distinct('_id'))
-        # print('User not found')
-        # New user: use a fallback method (e.g., popular items)
+        
         return popular_items_recommend(n)
     
     user_profile = db['UserVectors'].find_one({'_id': user_id})['vector']
-    scores = cosine_similarity([user_profile], features)[0]
     
+    scores = cosine_similarity([user_profile], features)[0]
     top_indices = scores.argsort()[-n:][::-1]
     recommended_ids = df.iloc[top_indices]['id'].tolist()
     
@@ -167,11 +157,9 @@ def item_based_recommend(base_items, n):
     df = get_df()
     annoy_index = get_annoy_index()
     base_indices = df[df['id'].isin(base_items)].index
-    # print('\n\n\nbase_indices:',len(df),'\n\n\n')
+
     similar_items = set()
     for idx in base_indices:
-        # print('idx:',idx)
-        # print('annoy dims:',annoy_index.get_n_items(),annoy_index.get_n_trees())
         similar_indices = annoy_index.get_nns_by_item(idx, n)
         similar_items.update(df.iloc[similar_indices]['id'].tolist())
     

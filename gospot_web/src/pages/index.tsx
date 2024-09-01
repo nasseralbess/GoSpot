@@ -17,8 +17,8 @@ export default function Home() {
   // Fetching data for the cards
   const fetchCardData = async () => {
     try {
-      const idData = await fetchData('http://127.0.0.1:8080/user/get-next-spot?user_id=1', 'GET');
-      const detailsData = await fetchData('http://127.0.0.1:8080/user/retrieve-details', 'POST', {}, {
+      const idData = await fetchData('http://127.0.0.1:8080/user/get_next_spot?user_id=1', 'GET');
+      const detailsData = await fetchData('http://127.0.0.1:8080/user/retrieve_details', 'POST', {}, {
         spotLists: idData,
       });
       setData(detailsData);
@@ -47,7 +47,7 @@ export default function Home() {
 
   // THIS IS WHERE YOU ARE SENDING YOUR SPOT PREFENCES, OR THE DATA THAT WOULD SAY YOU LIKE OR NOT
   const sendingInteractions = async () => {
-    const interactionResponse = await fetchData('http://127.0.0.1:8080/user/record-interaction', 'POST',{}, 
+    const interactionResponse = await fetchData('http://127.0.0.1:8080/user/record_interaction', 'POST',{}, 
       {
         'user_id': 1,
         interaction
@@ -88,7 +88,7 @@ export default function Home() {
     }
 
     try {
-      const data = await fetchData('http://127.0.0.1:8080/user/update-preferences', 'PUT', {}, {
+      const data = await fetchData('http://127.0.0.1:8080/user/update_preferences', 'PUT', {}, {
         user_id: 1,
         new_preferences: {
           price: price,

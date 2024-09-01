@@ -13,7 +13,7 @@ const CategorySelector = ({ onClose }) => {
 
   const retrieveDataFirst = async () => {
     try {
-      const preferenceData = await fetchData('http://127.0.0.1:8080/user/retrieve-current-preferences?user_id=1', 'GET')
+      const preferenceData = await fetchData('http://127.0.0.1:8080/user/retrieve_current_preferences?user_id=1', 'GET')
       console.log(preferenceData)
       let pricing;
       switch (preferenceData.price) {

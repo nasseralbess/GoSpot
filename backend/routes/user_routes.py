@@ -14,7 +14,7 @@ updating_preferences = UpdatePreferencesSchema()
 
 # Adds a user, and fail if user already exists
 # Works perfectly fine, Validation works 
-@normal_route.route('/add-user', methods=['POST'])
+@normal_route.route('/add_user', methods=['POST'])
 def add_new_user():
     data = request.json
 
@@ -54,10 +54,10 @@ def add_new_user():
 
 # Works perfectly fine 
 # Updates the entire preferences
-@normal_route.route('/update-preferences', methods=['PUT'])
+@normal_route.route('/update_preferences', methods=['PUT'])
 def update_user_preferences():
     data = request.json
-    # print(f'\n\ndata: {data}\n\n')
+    print(f'\n\ndata: {data}\n\n')
     errors = updating_preferences.validate(data)
 
     if errors:
@@ -103,7 +103,7 @@ def update_user_preferences():
     
 # Validation good 
 # Recording interactions of places for users 
-@normal_route.route('/record-interaction', methods=['POST'])
+@normal_route.route('/record_interaction', methods=['POST'])
 def record_spot_interaction():
     data = request.json
 
@@ -143,7 +143,7 @@ def record_spot_interaction():
 
 # Updating coordinates 
 # This could be redundant, as you can update coordinates in the update preferences
-@normal_route.route('/update-coordinates', methods=['PUT'])
+@normal_route.route('/update_coordinates', methods=['PUT'])
 def update_user_coordinates():
     data = request.json
     user_id = data.get('user_id')
@@ -168,7 +168,7 @@ def update_user_coordinates():
 
 
 # Not working for string ids 
-@normal_route.route('/get-next-spot', methods=['GET'])
+@normal_route.route('/get_next_spot', methods=['GET'])
 def get_next_spot():
     user_id = request.args.get('user_id')
     next_spot = get_next_items(user_id)
@@ -178,14 +178,14 @@ def get_next_spot():
         user_id = int(user_id)
     except:
         pass
-    vector_db = db['UserVectors']
-    vector= vector_db.find_one({'_id': user_id})['vector']
+    # vector_db = db['UserVectors']
+    # vector= vector_db.find_one({'_id': user_id})['vector']
     # print('vector:',sum(vector))
     # print('in loop:')
     # for i in range(len(vector)):
     #     print('iter:',i)
     #     if vector[i] != 0:
-    #         print(i,":",vector[i], end='\t')
+    #         print(i,":",vector[i], end='\n')
     # print(f'\n\nuser_vector{sum(vector)}\n\n')
     ret = []
     seen = list(user.find_one({'_id': user_id}).get('location_specific', {}).keys())
@@ -194,6 +194,7 @@ def get_next_spot():
         return jsonify({'message': 'No more spots available'}), 404
     
     for id in next_spot:
+        # print (id, end = "\n")
         if id not in seen:
             ret.append(id)
     
@@ -202,7 +203,7 @@ def get_next_spot():
     
     return jsonify({'message': 'No more spots available'}), 404
 
-@normal_route.route('/retrieve-current-preferences', methods=['GET'])
+@normal_route.route('/retrieve_current_preferences', methods=['GET'])
 def retrieve_user_preferences():
     user_id = request.args.get('user_id')
     db = current_app.config['db']
@@ -221,7 +222,7 @@ def retrieve_user_preferences():
 
 
 # Create the route
-@normal_route.route('/retrieve-details', methods=['POST'])
+@normal_route.route('/retrieve_details', methods=['POST'])
 def retrieve_details():
     # schema = SpotListSchema()
     # ADD VALIDATION
@@ -247,7 +248,7 @@ def retrieve_details():
 
 
 
-@normal_route.route('/get-group-spot', methods=['GET'])
+@normal_route.route('/get_group_spot', methods=['GET'])
 def get_next_group_spot():
     user_ids = request.args.getlist('user_ids')
     # print('\n\n user_ids:',user_ids,'\n\n')
@@ -259,7 +260,7 @@ def get_next_group_spot():
         return jsonify({'message': 'No group spot available'}), 404
 
 
-@normal_route.route('/create-group', methods=['POST'])
+@normal_route.route('/create_group', methods=['POST'])
 def create_group():
     data = request.json
     group_id = data.get('group_id')
@@ -272,7 +273,7 @@ def create_group():
 
 
 
-@normal_route.route('/add-to-group', methods=['POST'])
+@normal_route.route('/add_to_group', methods=['POST'])
 def add_to_group():
     data = request.json
     group_id = data.get('group_id')
