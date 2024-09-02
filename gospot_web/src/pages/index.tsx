@@ -15,9 +15,9 @@ export default function Home() {
   const [interaction, setinteraction] = useState({});
 
   // Fetching data for the cards
-  const fetchCardData = async () => {
+  const fetchInitialCard = async () => {
     try {
-      const idData = await fetchData('http://127.0.0.1:8080/user/get_next_spot?user_id=1', 'GET');
+      const idData = await fetchData('http://127.0.0.1:8080/user/get_next_spot?user_id=1&num_items=5', 'GET');
       const detailsData = await fetchData('http://127.0.0.1:8080/user/retrieve_details', 'POST', {}, {
         spotLists: idData,
       });
@@ -29,14 +29,12 @@ export default function Home() {
 
   // Fetch data when the component mounts
   useEffect(() => {
-    fetchCardData();
+    fetchInitialCard();
   }, []); // Empty dependency array means this effect runs once when the component mounts
+
 
   // Keeping track of user interactions is done here
   useEffect(() => {
-    console.log("Running here");
-    console.log(Object.keys(interaction).length);
-    console.log(interaction);
     // Check if the user has clicked either check or X for all restaurants
     if (Object.keys(interaction).length === data.length && data.length > 0) {
       // alert('All options clicked');
@@ -44,6 +42,7 @@ export default function Home() {
 
     }
   }, [interaction, data.length]);
+
 
   // THIS IS WHERE YOU ARE SENDING YOUR SPOT PREFENCES, OR THE DATA THAT WOULD SAY YOU LIKE OR NOT
   const sendingInteractions = async () => {
@@ -57,11 +56,12 @@ export default function Home() {
     //   'user_id': 1,
     //   'interaction' : {interaction}
     // })
-
   }
-  
- 
 
+  // Replacing card at the specific index
+  
+
+  
   const openModal = () => {
     setModalIsOpen(true);
   };
@@ -99,7 +99,7 @@ export default function Home() {
 
       console.log(data);
       setModalIsOpen(false);
-      await fetchCardData()
+      await fetchInitialCard()
     } catch (error) {
       console.error('Error fetching data:', error.message);
       alert("Unable to Register data");
@@ -141,10 +141,11 @@ export default function Home() {
 
       <h1>Restaurants in New York</h1>
       <ul>
-        {data.map((restaurant) => (
+        {data.map((restaurant,index) => (
           // Pass the selection state and handler to each RestaurantCard
           <RestaurantCard
             key={restaurant._id}
+            index ={index}
             restaurant={restaurant}
             onSelection={handleSelection}
             isSelected={interaction[restaurant._id]}

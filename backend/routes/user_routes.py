@@ -163,16 +163,20 @@ def update_user_coordinates():
 
 
 # Not working for string ids 
+# Specifiy the amount of items to get with maximum
 @normal_route.route('/get_next_spot', methods=['GET'])
 def get_next_spot():
     user_id = request.args.get('user_id')
+    num_items = request.args.get('num_items', default=1, type=int)  # New query parameter to specify the number of items
+    
     next_spot = get_next_items(user_id)
     db = get_db()
     user = db['User']
+    
     try:
         user_id = int(user_id)
-    except:
-        pass
+    except ValueError:
+        return jsonify({'message': 'Invalid user_id'}), 400
    
     ret = set()  # Use a set to ensure unique items
     seen = list(user.find_one({'_id': user_id}).get('location_specific', {}).keys())
@@ -183,6 +187,8 @@ def get_next_spot():
     for id in next_spot:
         if id not in seen:
             ret.add(id)
+        if len(ret) >= num_items:  # Stop when the desired number of items is reached
+            break
     
     if ret:
         return jsonify(list(ret)), 200

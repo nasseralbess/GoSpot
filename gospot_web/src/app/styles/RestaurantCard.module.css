@@ -1,5 +1,9 @@
 /* Existing Styles */
-
+.removed {
+  opacity: 0.3;
+  transition: opacity 3s ease-out;
+  pointer-events: none;
+}
 /* Randomly Positioned Circular Buttons */
 .selectionButtonCircle {
   position: absolute;
@@ -43,7 +47,7 @@
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
   position: relative;
   height: 300px; 
-  background: linear-gradient(to bottom right, #ffffff, #f9f9f9);
+  /* background: linear-gradient(to bottom right, #ffffff, #f9f9f9); */
   transition: box-shadow 0.3s ease, transform 0.3s ease;
 }
 
