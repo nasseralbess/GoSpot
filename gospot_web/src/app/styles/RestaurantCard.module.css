@@ -1,5 +1,36 @@
 /* Existing Styles */
 
+.saveButton {
+  background-color: #28a745;
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 6px;
+  font-size: 14px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.saveButton:hover {
+  background-color: #218838;
+}
+
+.noMoreButton {
+  background-color: #dc3545;
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 6px;
+  font-size: 14px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+  margin-left: 10px; /* Spacing between buttons */
+}
+
+.noMoreButton:hover {
+  background-color: #c82333;
+}
+
 
 /* Randomly Positioned Circular Buttons */
 .selectionButtonCircle {
@@ -54,6 +85,13 @@
   transform: translateX(-100%); /* Slide to the left */
   opacity: 0; /* Fade out */
   background: red;
+  pointer-events: none; /* Disable interactions while animating */
+}
+.added {
+  /* When the card is marked as removed, it will slide to the left and fade out */
+  transform: translateX(100%); /* Slide to the left */
+  opacity: 0; /* Fade out */
+  background: lightgreen;
   pointer-events: none; /* Disable interactions while animating */
 }
 

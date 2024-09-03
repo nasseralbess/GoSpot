@@ -18,7 +18,7 @@ class GeneralPreferencesSchema(Schema):
     coordinates = fields.List(fields.Float(), required=True, validate=validate_coordinates)
 
 class UserSchema(Schema):
-    user_id = fields.Str(required=True)
+    user_id = fields.Int(required=True)
     general_preferences = fields.Nested(GeneralPreferencesSchema, required=True)
     location_specific = fields.Dict(required=True)
     friends = fields.List(fields.Str(), required=True)

@@ -129,15 +129,16 @@ export default function Home() {
   };
 
   // Function to handle user's selection of check or X
-  const handleSelection = (restaurantId, option, timeTaken, index) => {
+  const handleSelection = (restaurantId, option, timeTaken, pressedShare,index) => {
     let toSaveOrNot = option === 'check' ? 'True' : 'False';
-
+    let toShareOrNot = pressedShare ? 'True' : 'False';
     // Update the interaction state first
     setinteraction(prev => ({
       ...prev, 
       [restaurantId]: { 
         "time_viewing": timeTaken, 
-        "pressed_save": toSaveOrNot 
+        "pressed_save": toSaveOrNot, 
+        "pressed_share": toShareOrNot 
       }
     }));
 
