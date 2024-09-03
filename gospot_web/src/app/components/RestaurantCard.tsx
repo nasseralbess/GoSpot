@@ -1,10 +1,10 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef } from 'react';
 import Modal from 'react-modal';
 import styles from '../styles/RestaurantCard.module.css';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faShareSquare, faBookmark, faStar } from '@fortawesome/free-solid-svg-icons';
 
-const RestaurantCard = ({ restaurant, onSelection, isSelected,index }) => {
+const RestaurantCard = ({ restaurant, onSelection, isSelected, index }) => {
   const [modalIsOpen, setModalIsOpen] = useState(false); // State to control the restaurant details modal
   const [totalTimeSpent, setTotalTimeSpent] = useState(0); // Track the total time spent viewing the card
   const [selection, setSelection] = useState(null); // Track if the user has selected check or X
@@ -17,40 +17,47 @@ const RestaurantCard = ({ restaurant, onSelection, isSelected,index }) => {
     timerRef.current = Date.now(); // Start timing when the modal opens
   };
 
-  // Function to close the modal and stop the timer
+  // Function to calculate and record the time spent
+  const recordTimeSpent = () => {
+    if (timerRef.current) {
+      const timeSpent = (Date.now() - timerRef.current) / 1000; // Calculate time spent in seconds
+      setTotalTimeSpent((prevTime) => prevTime + timeSpent); // Update total time spent
+      return timeSpent;
+    }
+    return 0;
+  };
+
+  // Function to close the modal
   const closeModal = (event) => {
     event.stopPropagation(); // Prevent the click event from bubbling up
-    const timeSpent = (Date.now() - timerRef.current) / 1000; // Calculate time spent in seconds
-    setTotalTimeSpent((prevTime) => prevTime + timeSpent); // Update total time spent
+    recordTimeSpent(); // Record the time spent in the modal
     setModalIsOpen(false);
   };
 
   // Function to handle user's selection (check or X)
   const handleSelection = async (event, option) => {
-    console.log(index)
     event.stopPropagation(); // Prevent the click event from bubbling up
+    const timeSpent = recordTimeSpent(); // Record the time spent before proceeding
+
     setSelection(option); // Set the user's selection state
 
-    // Notify the parent component of the selection
-    await onSelection(restaurant._id, option, totalTimeSpent);
-
-    // Visually remove the card if "X" is selected
-    if (option === 'x') {
-      setCardClass(`${styles.card} ${styles.removed}`); // Apply the "removed" class to fade out the card
-    }
-  };
-
-  // Update the CSS class based on the selection state
-  useEffect(() => {
-    
-    if (selection === 'check') {
+    // Update the card class based on selection
+    if (option === 'check') {
       setCardClass(`${styles.card} ${styles.selectedCheck}`);
-    } else if (selection === 'x') {
-      setCardClass(`${styles.card} ${styles.selectedX}`);
+    } else if (option === 'x') {
+      setCardClass(`${styles.card} ${styles.removed}`); // Apply the "removed" class to fade out the card
     } else {
       setCardClass(styles.card); // Reset to the default class if no selection
     }
-  }, [selection]); // Dependency array ensures this effect runs whenever the selection changes
+
+    // Notify the parent component of the selection with the correct total time spent
+    await onSelection(restaurant._id, option, totalTimeSpent + timeSpent, index);
+
+    // Close the modal if it is open
+    if (modalIsOpen) {
+      setModalIsOpen(false);
+    }
+  };
 
   return (
     <li onClick={openModal} className={cardClass}>
@@ -60,7 +67,10 @@ const RestaurantCard = ({ restaurant, onSelection, isSelected,index }) => {
       <div className={styles.cardContent}>
         <h2 className={styles.cardTitle}>{restaurant.name}</h2>
         <p className={styles.cardDescription}>
-          {restaurant.location.display_address.join(', ')}
+          {/* Check if location and display_address exist before rendering */}
+          {restaurant.location?.display_address ? 
+            restaurant.location.display_address.join(', ') : 
+            'Address not available'}
         </p>
         <div className={styles.selectionButtons}>
           <button
@@ -102,7 +112,12 @@ const RestaurantCard = ({ restaurant, onSelection, isSelected,index }) => {
         </div>
         <div className={styles.modalContent}>
           <div className={styles.modalSection}>
-            <p className={styles.modalAddress}>{restaurant.location.display_address.join(', ')}</p>
+            <p className={styles.cardDescription}>
+              {/* Check if location and display_address exist before rendering */}
+              {restaurant.location?.display_address ? 
+                restaurant.location.display_address.join(', ') : 
+                'Address not available'}
+            </p>
             <p>Phone: {restaurant.display_phone}</p>
             <p>Distance: {restaurant.distance.toFixed(2)} meters</p>
             <p>Transactions: {restaurant.transactions.join(', ')}</p>

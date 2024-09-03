@@ -13,6 +13,7 @@ export default function Home() {
   
   // State to keep track of the user's selection (check or X) for each restaurant
   const [interaction, setinteraction] = useState({});
+  const [pendingReplaceIndex, setPendingReplaceIndex] = useState(null); // To store the index that needs to be replaced
 
   // Fetching data for the cards
   const fetchInitialCard = async () => {
@@ -32,36 +33,56 @@ export default function Home() {
     fetchInitialCard();
   }, []); // Empty dependency array means this effect runs once when the component mounts
 
-
-  // Keeping track of user interactions is done here
+  // Use useEffect to monitor when to send interactions and replace card
   useEffect(() => {
-    // Check if the user has clicked either check or X for all restaurants
-    if (Object.keys(interaction).length === data.length && data.length > 0) {
-      // alert('All options clicked');
-      sendingInteractions()
-
+    if (pendingReplaceIndex !== null) {
+      sendingInteractions(); // Call this after the interaction state has been updated
+      replaceCardAtIndex(pendingReplaceIndex);
+      setPendingReplaceIndex(null); // Reset the pending index
     }
-  }, [interaction, data.length]);
+  }, [interaction, pendingReplaceIndex]);
 
-
-  // THIS IS WHERE YOU ARE SENDING YOUR SPOT PREFENCES, OR THE DATA THAT WOULD SAY YOU LIKE OR NOT
+  // THIS IS WHERE YOU ARE SENDING YOUR SPOT PREFERENCES, OR THE DATA THAT WOULD SAY YOU LIKE OR NOT
   const sendingInteractions = async () => {
-    const interactionResponse = await fetchData('http://127.0.0.1:8080/user/record_interaction', 'POST',{}, 
+    console.log(interaction);
+    const interactionResponse = await fetchData('http://127.0.0.1:8080/user/record_interaction', 'POST', {}, 
       {
         'user_id': 1,
         interaction
       }
-    )
-    // console.log( {
-    //   'user_id': 1,
-    //   'interaction' : {interaction}
-    // })
-  }
+    );
+    setinteraction({});
+  };
 
-  // Replacing card at the specific index
+  const replaceCardAtIndex = async (index) => {
+    try {
+      let newCardData;
+      let isDuplicate = true;
+  
+      // Fetch a new card until it's not a duplicate of the one being replaced
+      while (isDuplicate) {
+        const newIdCard = await fetchData('http://127.0.0.1:8080/user/get_next_spot?user_id=1&num_items=1', 'GET');
+        newCardData = await fetchData('http://127.0.0.1:8080/user/retrieve_details', 'POST', {}, {
+          spotLists: newIdCard,
+        });
+  
+        // Check if the new card is different from the current card at the index
+        if (data[index]._id !== newCardData[0]._id) {
+          isDuplicate = false;
+        }
+      }
+  
+      // Update only the card at the specific index
+      setData(prevData => prevData.map((card, idx) => idx === index ? newCardData[0] : card));
+    } catch (error) {
+      console.error('Error replacing card:', error.message);
+    }
+  };
   
 
-  
+
+
+
   const openModal = () => {
     setModalIsOpen(true);
   };
@@ -99,7 +120,7 @@ export default function Home() {
 
       console.log(data);
       setModalIsOpen(false);
-      await fetchInitialCard()
+      await fetchInitialCard();
     } catch (error) {
       console.error('Error fetching data:', error.message);
       alert("Unable to Register data");
@@ -108,13 +129,20 @@ export default function Home() {
   };
 
   // Function to handle user's selection of check or X
-  const handleSelection = (restaurantId, option, timeTaken) => {
-    let toSaveOrNot = 'False'
-    if(option == 'check'){
-      toSaveOrNot = 'True'
-    }
-    setinteraction(prev => ({ ...prev, [restaurantId]: 
-      { "time_viewing": timeTaken, "pressed_save": toSaveOrNot }}));
+  const handleSelection = (restaurantId, option, timeTaken, index) => {
+    let toSaveOrNot = option === 'check' ? 'True' : 'False';
+
+    // Update the interaction state first
+    setinteraction(prev => ({
+      ...prev, 
+      [restaurantId]: { 
+        "time_viewing": timeTaken, 
+        "pressed_save": toSaveOrNot 
+      }
+    }));
+
+    // Set the index that needs replacement
+    setPendingReplaceIndex(index);
   };
 
   return (
@@ -141,11 +169,11 @@ export default function Home() {
 
       <h1>Restaurants in New York</h1>
       <ul>
-        {data.map((restaurant,index) => (
+        {data.map((restaurant, index) => (
           // Pass the selection state and handler to each RestaurantCard
           <RestaurantCard
             key={restaurant._id}
-            index ={index}
+            index={index}
             restaurant={restaurant}
             onSelection={handleSelection}
             isSelected={interaction[restaurant._id]}
