@@ -370,3 +370,45 @@ def record_spot_interaction_group():
         error_message = f"An error occurred while recording interactions: {str(e)}"
         print(error_message)  # Optional: log the error message
         return jsonify({'error': error_message}), 500
+    
+@normal_route.route('/clear_spot_data', methods=['GET'])
+def clear_spot_data():
+    """
+    Clear spot data for a specific user.
+    
+    This endpoint accepts a user ID and clears all spot data for that user.
+    
+    Returns:
+        JSON response indicating the success or failure of the operation.
+    """
+    
+    user_id = request.args.get('user_id')
+    if not user_id:
+        return jsonify({'error': 'User ID is required'}), 400
+    
+    user_collection = get_db()['User']
+    
+    try:
+        # Find the user in the database
+        user = user_collection.find_one({'_id': int(user_id)})
+        if user is None:
+            return jsonify({'error': 'User not found'}), 404
+        
+        # Clear all location-specific data for the user
+        result = user_collection.update_one(
+            {'_id': int(user_id)},
+            {
+                '$set': {
+                    'location_specific': {}
+                }
+            }
+        )
+        
+        if result.modified_count:
+            return jsonify({'message': f"Spot data cleared for user {user_id}"}), 200
+        else:
+            return jsonify({'error': 'No changes made'}), 404
+    
+    except Exception as e:
+        error_message = f"An error occurred while clearing spot data: {str(e)}"
+        print(error_message)
