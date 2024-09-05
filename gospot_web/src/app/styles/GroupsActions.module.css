@@ -1,4 +1,5 @@
-.container {
+/* src/styles/GroupsActions.module.css */
+.groupActionsContainer {
   display: flex;
   justify-content: center; /* Center buttons horizontally */
   align-items: center; /* Center buttons vertically if there's extra space */
@@ -7,12 +8,12 @@
   gap: 20px;
 }
 
-.groupBox {
+.actionBox {
   border: 2px solid #0070f3;
   border-radius: 12px;
   padding: 15px;
   text-align: center;
-  background-color: #ffffff; /* White background */
+  background-color: #ffffff;
   cursor: pointer;
   width: 200px; /* Fixed width */
   height: 80px; /* Fixed height to ensure uniform button size */
@@ -28,15 +29,16 @@
   display: flex;
   align-items: center; /* Center text vertically */
   justify-content: center; /* Center text horizontally */
+  text-align: center; /* Ensure text is centered */
 }
 
-.groupBox:hover {
+.actionBox:hover {
   background-color: #0070f3;
   color: #fff;
   transform: scale(1.05);
   box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3);
 }
 
-.groupBox:active {
+.actionBox:active {
   transform: scale(0.98);
 }
