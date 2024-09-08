@@ -14,12 +14,7 @@ adding_user_to_group_schema = addGroupSchema()
 create_group_schema = GroupSchema() 
 
 
-
-
-#
-#
-#Group Section
-#
+#getting spots for group 
 @group_route.route('/get_group_spot', methods=['GET'])
 def get_next_group_spot():
     group_id = request.args.get('group_id')
@@ -44,15 +39,13 @@ def get_next_group_spot():
         return jsonify({'error': str(e)}), 500
     
 
-
+#creating group route 
 @group_route.route('/create_group', methods=['POST'])
 def create_group():
 
 
     data = request.json
-    
     errors = create_group_schema.validate(data)
-    
     if errors:
         return jsonify({
             "message": "Data Structure Invalid, please ensure data structure is correct",
@@ -63,23 +56,23 @@ def create_group():
     group_id = data.get('group_id')
     group_name = data.get('group_name')
     groups = get_db()['Groups']
+
     groups.insert_one({
         '_id': group_id,
         'members': [data.get('creator')],
         'group_name': group_name
     })
+
     return jsonify({'group created': group_id}), 200
 
 
-
+#adding user to group
 @group_route.route('/add_to_group', methods=['POST'])
 def add_to_group():
 
         
     data = request.json
-
     errors = adding_user_to_group_schema.validate(data)
-    
     if errors:
         return jsonify({
             "message": "Data Structure Invalid, please ensure data structure is correct",
