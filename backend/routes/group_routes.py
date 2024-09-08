@@ -60,7 +60,8 @@ def create_group():
     groups.insert_one({
         '_id': group_id,
         'members': [data.get('creator')],
-        'group_name': group_name
+        'group_name': group_name,
+        'saved_locations': {}
     })
 
     return jsonify({'group created': group_id}), 200
@@ -142,12 +143,17 @@ def record_spot_interaction_group():
                 'last_active': datetime.now()
             }
         }
+        saved_data = []
 
         # Filter interactions to only include those with 'pressed_save' set to 'True'
         for spot_id, interaction in interactions.items():
             if interaction.get('pressed_save') == "True":
                 # Only record 'pressed_save' field
                 update_data['$set'][f'location_specific.{spot_id}.pressed_save'] = "True"
+                saved_data.append(spot_id)
+                                    
+        
+                
 
         if len(update_data['$set']) == 1:  # Only 'last_active' was set, meaning no 'pressed_save' was True
             return jsonify({'message': 'No spots to update as pressed_save is not True for any spot'}), 200
@@ -168,6 +174,17 @@ def record_spot_interaction_group():
 
             if result.modified_count == 0:
                 return jsonify({'error': f'No changes made for user {user_id}'}), 404
+
+        print(saved_data)
+        #saving data to group list 
+        groups_collection.update_one(
+        {'_id': group_id},
+        {
+            '$set': {
+                    'location_specific': saved_data
+                }
+        }
+    )
 
         return jsonify({'message': 'Interaction recorded successfully for all group members where pressed_save is True'}), 200
 
