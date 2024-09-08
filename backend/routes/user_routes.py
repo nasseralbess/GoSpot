@@ -98,7 +98,8 @@ def update_user_preferences():
 
     
 # Recording interactions of places for users 
-@normal_route.route('/record_interaction', methods=['POST'])
+
+@normal_route.route('/record_interaction', methods=['POST']) #save inside group 
 def record_spot_interaction():
     data = request.json
 
@@ -243,6 +244,8 @@ def retrieve_details():
 @normal_route.route('/get_group_spot', methods=['GET'])
 def get_next_group_spot():
     group_id = request.args.get('group_id')
+    num_items = request.args.get('num_items', default=1, type=int)  # New query parameter to specify the number of items
+
     groups_collection = get_db()['Groups']
     try:
         group = groups_collection.find_one({'_id': group_id})
@@ -251,7 +254,7 @@ def get_next_group_spot():
 
         user_ids = group.get('members', [])
         
-        group_spot = get_group_recommendation(user_ids)
+        group_spot = get_group_recommendation(user_ids, num_items)
     
 
         if group_spot is not None:
