@@ -2,13 +2,14 @@ from flask import Blueprint, request, jsonify, current_app
 from bson import ObjectId
 from datetime import datetime
 from helpers import *
-from schemas.user_schema import UserInteractionSchema, UserSchema, UpdatePreferencesSchema
+from schemas.user_schema import UserInteractionSchema, UserSchema, UpdatePreferencesSchema, GroupInteractionSchema
 
 # Initialistion 
 normal_route = Blueprint('normal_routes', __name__)
 
 # Schemas 
 user_interaction_schema = UserInteractionSchema()
+group_interaction_schema = GroupInteractionSchema()
 adding_user_schema = UserSchema()
 updating_preferences = UpdatePreferencesSchema()
 
@@ -313,12 +314,18 @@ def record_spot_interaction_group():
 
     # Data validation
    
-    group_id = data.get('group_id')
-    if not group_id:
-        return jsonify({'error': 'Group ID is required'}), 400
-
-    groups_collection = get_db()['Groups']
+    errors = group_interaction_schema.validate(data)
     
+    if errors:
+        return jsonify({
+            "message": "Data Structure Invalid, please ensure data structure is correct",
+            "errors": (errors)
+        }), 400
+    
+    groups_collection = get_db()['Groups']
+    group_id = data.get('group_id')
+
+
     try:
         # Find the group in the database
         group = groups_collection.find_one({'_id': group_id})

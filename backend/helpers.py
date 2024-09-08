@@ -64,7 +64,7 @@ def get_user_profile(user_id, tfidf, coordinate_scaler):
     # print('vector:',sum(user_vector))
     
 
-    price_index = features.shape[1] - 4 + len(general_prefs['price']) -1  #This line check with nasser
+    price_index = features.shape[1] - 5 + len(general_prefs['price'])
     user_vector[price_index] = 1
     
    
@@ -222,7 +222,7 @@ def least_misery_group_recommend(user_ids, n=10):
     
     return recommended_ids
 
-def get_group_recommendation(user_ids, n):
+def get_group_recommendation(user_ids):
     # You could alternate between different group recommendation strategies
     strategies = [group_based_recommend, least_misery_group_recommend]
     strategy = random.choice(strategies)

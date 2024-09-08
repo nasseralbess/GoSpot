@@ -41,6 +41,14 @@ class UserInteractionSchema(Schema):
         required=True
     )
 
+class GroupInteractionSchema(Schema):
+    group_id = fields.Int(required=True)
+    interaction = fields.Dict(
+        keys=fields.Str(),
+        values=fields.Nested(InteractionSchema),
+        required=True
+    )
+
 # For updating user preference 
 class UpdatePreferencesSchema(Schema):
     user_id = fields.Raw(required=True)
