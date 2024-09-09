@@ -236,47 +236,251 @@ def retrieve_details():
     return jsonify(results), 200
 
 
-@normal_route.route('/clear_spot_data', methods=['GET'])
-def clear_spot_data():
-    """
-    Clear spot data for a specific user.
+
+# 
+# 
+# Saved spots 
+# 
+@normal_route.route('/retrieve_all_saved', methods=['GET'])
+def retrieve_all_saved():
+    user_id = request.args.get('user_id')
+    if not user_id:
+        return jsonify({'error': 'User ID is required'}), 400
+
+    user_id = int(user_id)  # Convert user_id to integer
+    db = get_db()
+    users_db = db['User']
+    archive_db = db['archived_locations']
+
+    # Query to find the document for the specified user ID in the User collection
+    user_data = users_db.find_one({'_id': user_id})
+    if not user_data:
+        return jsonify({"error": "User not found"}), 404
+
+    # Extract the location_specific field (assumed to be an object)
+    location_specific = user_data.get('location_specific', {})
+    saved_places = [
+        place_id
+        for place_id, place_data in location_specific.items()
+        if place_data.get('pressed_save') == "True"
+    ]
+
+    # Query the ArchivedLocations collection for saved places
+    archived_places = list(archive_db.find({
+        'user_id': user_id,
+        'details.pressed_save': "True"
+    }, {
+        '_id': 0, 'place_id': 1  # Project only place_id, exclude _id from result
+    }))
+
+    # Combine saved places from both active and archived locations (only place_id)
+    saved_places.extend(place['place_id'] for place in archived_places)
+
+    return jsonify(saved_places), 200
+
+@normal_route.route('/create_category', methods=['GET'])
+def retrieve_all_saved():
+    user_id = request.args.get('user_id')
+    if not user_id:
+        return jsonify({'error': 'User ID is required'}), 400
+
+    user_id = int(user_id)  # Convert user_id to integer
+    db = get_db()
+    users_db = db['User']
+    archive_db = db['archived_locations']
+
     
-    This endpoint accepts a user ID and clears all spot data for that user.
+    return jsonify(saved_places), 200
+
+
+
+
+#
+#
+#Group Section
+#
+@normal_route.route('/get_group_spot', methods=['GET'])
+def get_next_group_spot():
+    group_id = request.args.get('group_id')
+    groups_collection = get_db()['Groups']
+    try:
+        group = groups_collection.find_one({'_id': group_id})
+        if group is None:
+            return jsonify({'error': 'Group not found'}), 404
+
+        user_ids = group.get('members', [])
+        
+        group_spot = get_group_recommendation(user_ids)
+    
+
+        if group_spot is not None:
+            return jsonify(group_spot), 200
+        else:
+            return jsonify({'message': 'No group spot available'}), 404
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+    
+
+
+@normal_route.route('/create_group', methods=['POST'])
+def create_group():
+    data = request.json
+    group_id = data.get('group_id')
+    group_name = data.get('group_name')
+    groups = get_db()['Groups']
+    groups.insert_one({
+        '_id': group_id,
+        'members': [data.get('creator')],
+        'group_name': group_name
+    })
+    return jsonify({'group created': group_id}), 200
+
+
+
+@normal_route.route('/add_to_group', methods=['POST'])
+def add_to_group():
+    data = request.json
+    group_id = data.get('group_id')
+    user_id = data.get('user_id')
+    groups = current_app.config['db']['Groups']
+    groups.update_one(
+        {'_id': group_id},
+        {
+            '$addToSet': {
+                'members': user_id
+            }
+        }
+    )
+    return jsonify({'message': f"User {user_id} added to group {group_id}"}), 200
+
+@normal_route.route('/record_interaction_group', methods=['POST'])
+def record_spot_interaction_group():
+    """
+    Record spot interactions for all users in a group if pressed_save is True.
+    
+    This endpoint accepts interaction data for a specific group and updates the 
+    interactions for all group members in the database, only if 'pressed_save' is True.
     
     Returns:
         JSON response indicating the success or failure of the operation.
     """
+
+    data = request.json
+
+    # Data validation
+   
+    group_id = data.get('group_id')
+    if not group_id:
+        return jsonify({'error': 'Group ID is required'}), 400
+
+    groups_collection = get_db()['Groups']
     
+    try:
+        # Find the group in the database
+        group = groups_collection.find_one({'_id': group_id})
+        if group is None:
+            return jsonify({'error': 'Group not found'}), 404
+
+        # Retrieve the list of user IDs from the group
+        user_ids = group.get('members', [])
+        if not user_ids:
+            return jsonify({'error': 'No members found in the group'}), 404
+
+        interactions = data.get('interaction', {})
+        if not interactions:
+            return jsonify({'error': 'No interaction data provided'}), 400
+
+        # Prepare update data only for spots where 'pressed_save' is 'True'
+        update_data = {
+            '$set': {
+                'last_active': datetime.now()
+            }
+        }
+
+        # Filter interactions to only include those with 'pressed_save' set to 'True'
+        for spot_id, interaction in interactions.items():
+            if interaction.get('pressed_save') == "True":
+                # Only record 'pressed_save' field
+                update_data['$set'][f'location_specific.{spot_id}.pressed_save'] = "True"
+
+        if len(update_data['$set']) == 1:  # Only 'last_active' was set, meaning no 'pressed_save' was True
+            return jsonify({'message': 'No spots to update as pressed_save is not True for any spot'}), 200
+
+        # Get the User collection to update each user
+        user_collection = get_db()['User']
+
+        # Update interactions for all group members
+        for user_id in user_ids:
+            # Check if user exists in the database
+            if user_collection.find_one({'_id': int(user_id)}) is None:
+                return jsonify({'error': f'User {user_id} not found'}), 404
+
+            result = user_collection.update_one(
+                {'_id': int(user_id)},
+                update_data
+            )
+
+            if result.modified_count == 0:
+                return jsonify({'error': f'No changes made for user {user_id}'}), 404
+
+        return jsonify({'message': 'Interaction recorded successfully for all group members where pressed_save is True'}), 200
+
+    except Exception as e:
+        error_message = f"An error occurred while recording interactions: {str(e)}"
+        print(error_message)  # Optional: log the error message
+        return jsonify({'error': error_message}), 500
+
+
+
+# When you clear, you only clear the location_specific for the algorithm to restart
+# But you archive those locations, and can still see them in your saved
+# This is all so that we can perserve it for analytics later on 
+@normal_route.route('/clear_spot_data', methods=['GET'])
+def clear_spot_data():
+    """
+    Clear spot data for a specific user while archiving the existing spot data.
+    """
     user_id = request.args.get('user_id')
     if not user_id:
         return jsonify({'error': 'User ID is required'}), 400
     
-    user_collection = get_db()['User']
+    user_id = int(user_id)  # Ensure user_id is an integer
+    db = get_db()
+    user_collection = db['User']
+    archive_collection = db['archived_locations']
     
     try:
-        # Find the user in the database
-        user = user_collection.find_one({'_id': int(user_id)})
-        if user is None:
-            return jsonify({'error': 'User not found'}), 404
-        
-        # Clear all location-specific data for the user
-        result = user_collection.update_one(
-            {'_id': int(user_id)},
-            {
-                '$set': {
-                    'location_specific': {}
-                }
-            }
-        )
-        
-        if result.modified_count:
-            return jsonify({'message': f"Spot data cleared for user {user_id}"}), 200
-        else:
-            return jsonify({'error': 'No changes made'}), 404
-    
+        # Start a transaction to ensure atomicity
+        with db.client.start_session() as session:
+            with session.start_transaction():
+                user = user_collection.find_one({'_id': user_id}, session=session)
+                if not user:
+                    return jsonify({'error': 'User not found'}), 404
+                
+                # Archive each location-specific place separately
+                location_specific = user.get('location_specific', {})
+                for place_id, details in location_specific.items():
+                    archive_doc = {
+                        'user_id': user_id,
+                        'place_id': place_id,
+                        'details': details,
+                        'archived_time': datetime.now()
+                    }
+                    archive_collection.insert_one(archive_doc, session=session)
+                
+                # Clear the location-specific data
+                result = user_collection.update_one(
+                    {'_id': user_id},
+                    {'$set': {'location_specific': {}}},
+                    session=session
+                )
+                
+                if result.modified_count:
+                    return jsonify({'message': f"Spot data cleared for user {user_id}"}), 200
+                else:
+                    return jsonify({'error': 'No changes made'}), 404
+
     except Exception as e:
-        error_message = f"An error occurred while clearing spot data: {str(e)}"
-        print(error_message)
-
-
+        error_message = f"An error occurred: {str(e)}"
+        return jsonify({'error': error_message}), 500
 
