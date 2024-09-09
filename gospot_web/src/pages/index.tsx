@@ -68,6 +68,7 @@ export default function Home() {
         });
 
         // Check if the new card is different from the current card at the index
+        // Check throughout the entire recommended list
         if (data[index]._id !== newCardData[0]._id) {
           isDuplicate = false;
         }

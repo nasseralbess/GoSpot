@@ -19,6 +19,7 @@ from annoy import AnnoyIndex
 
 # Application-specific imports
 from routes.user_routes import normal_route
+from routes.group_routes import group_route
 from annoy_index import create_and_save_annoy_index  # Import the new function
 
 
@@ -118,7 +119,7 @@ def create_app():
 
     # print("Registering blueprint...")
     app.register_blueprint(normal_route, url_prefix='/user')
-
+    app.register_blueprint(group_route, url_prefix='/group')
     print("App creation completed.")
     return app
 

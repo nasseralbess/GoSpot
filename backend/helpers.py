@@ -38,7 +38,7 @@ def get_annoy_index():
     return annoy_index
 
 def get_user_profile(user_id, tfidf, coordinate_scaler):
-    print("Yousef")
+    # print("Yousef")
     db = get_db()
     user = db['User']
     features = get_features()
@@ -55,16 +55,16 @@ def get_user_profile(user_id, tfidf, coordinate_scaler):
     for category in general_prefs['categories']:
         
         mapped_category = reverse_category_mapping.get(category, 'other').lower()
-        print('mapped_category:', mapped_category)
-        print('vocab:', tfidf.vocabulary_) 
+        # print('mapped_category:', mapped_category)
+        # print('vocab:', tfidf.vocabulary_) 
         if mapped_category in tfidf.vocabulary_:
-            print('edited user vector')
-            print('idx:',tfidf.vocabulary_[mapped_category])
+            # print('edited user vector')
+            # print('idx:',tfidf.vocabulary_[mapped_category])
             user_vector[tfidf.vocabulary_[mapped_category]] = 1
-    print('vector:',sum(user_vector))
+    # print('vector:',sum(user_vector))
     
 
-    price_index = features.shape[1] - 4 + len(general_prefs['price']) -1 
+    price_index = features.shape[1] - 5 + len(general_prefs['price'])
     user_vector[price_index] = 1
     
    
