@@ -278,157 +278,138 @@ def retrieve_all_saved():
 
     return jsonify(saved_places), 200
 
-@normal_route.route('/create_category', methods=['GET'])
-def retrieve_all_saved():
+# Create collection category 
+@normal_route.route('/create_collection', methods=['POST'])
+def create_collection():
+    data = request.json
+    user_id = data.get('user_id')
+    name = data.get('name')
+    description = data.get('description', '')
+
+    if not user_id or not name:
+        return jsonify({'error': 'User ID and Collection Name are required'}), 400
+
+    db = get_db()
+    collections_db = db['categories']
+
+    # Create the new collection
+    new_collection = {
+        "user_id": user_id,
+        "name": name,
+        "description": description,
+        "places": [],
+        "created_at": datetime.utcnow(),
+        "updated_at": datetime.utcnow()
+    }
+
+    result = collections_db.insert_one(new_collection)
+
+    return jsonify({"message": "Collection created", "collection_id": str(result.inserted_id)}), 201
+
+# Added places into category 
+@normal_route.route('/add_to_collection', methods=['PUT'])
+def add_to_collection():
+    data = request.json
+    collection_id = data.get('collection_id')
+    place_id = data.get('place_id')
+
+    if not collection_id or not place_id:
+        return jsonify({'error': 'Collection ID and Place ID are required'}), 400
+
+    db = get_db()
+    collections_db = db['categories']
+
+    # Find and update the collection by adding the place_id
+    result = collections_db.update_one(
+        {"_id": ObjectId(collection_id)},
+        {"$addToSet": {"places": place_id}, "$set": {"updated_at": datetime.utcnow()}}
+    )
+
+    if result.matched_count == 0:
+        return jsonify({'error': 'categories not found'}), 404
+
+    return jsonify({"message": "Place added to categories"}), 200
+
+
+# Retrieving all category
+@normal_route.route('/retrieve_categories', methods=['GET'])
+def retrieve_categories():
     user_id = request.args.get('user_id')
+
     if not user_id:
         return jsonify({'error': 'User ID is required'}), 400
 
-    user_id = int(user_id)  # Convert user_id to integer
     db = get_db()
-    users_db = db['User']
-    archive_db = db['archived_locations']
+    collections_db = db['categories']
 
-    
-    return jsonify(saved_places), 200
+    # Query to retrieve all categories for the user
+    categories = list(collections_db.find(
+        {"user_id": int(user_id)},
+        {"_id": 1, "name": 1, "description": 1, "places": 1}
+    ))
 
-
-
-
-#
-#
-#Group Section
-#
-@normal_route.route('/get_group_spot', methods=['GET'])
-def get_next_group_spot():
-    group_id = request.args.get('group_id')
-    groups_collection = get_db()['Groups']
-    try:
-        group = groups_collection.find_one({'_id': group_id})
-        if group is None:
-            return jsonify({'error': 'Group not found'}), 404
-
-        user_ids = group.get('members', [])
-        
-        group_spot = get_group_recommendation(user_ids)
-    
-
-        if group_spot is not None:
-            return jsonify(group_spot), 200
-        else:
-            return jsonify({'message': 'No group spot available'}), 404
-    except Exception as e:
-        return jsonify({'error': str(e)}), 500
-    
-
-
-@normal_route.route('/create_group', methods=['POST'])
-def create_group():
-    data = request.json
-    group_id = data.get('group_id')
-    group_name = data.get('group_name')
-    groups = get_db()['Groups']
-    groups.insert_one({
-        '_id': group_id,
-        'members': [data.get('creator')],
-        'group_name': group_name
-    })
-    return jsonify({'group created': group_id}), 200
-
-
-
-@normal_route.route('/add_to_group', methods=['POST'])
-def add_to_group():
-    data = request.json
-    group_id = data.get('group_id')
-    user_id = data.get('user_id')
-    groups = current_app.config['db']['Groups']
-    groups.update_one(
-        {'_id': group_id},
+    # Format the response
+    formatted_categories = [
         {
-            '$addToSet': {
-                'members': user_id
-            }
+            "category_id": str(category['_id']),
+            "name": category.get('name'),
+            "description": category.get('description', ''),
+            "places": category.get('places', [])
         }
-    )
-    return jsonify({'message': f"User {user_id} added to group {group_id}"}), 200
+        for category in categories
+    ]
 
-@normal_route.route('/record_interaction_group', methods=['POST'])
-def record_spot_interaction_group():
-    """
-    Record spot interactions for all users in a group if pressed_save is True.
-    
-    This endpoint accepts interaction data for a specific group and updates the 
-    interactions for all group members in the database, only if 'pressed_save' is True.
-    
-    Returns:
-        JSON response indicating the success or failure of the operation.
-    """
+    return jsonify(formatted_categories), 200
 
+# Removing a place from a category 
+@normal_route.route('/remove_from_collection', methods=['PUT'])
+def remove_from_collection():
     data = request.json
+    collection_id = data.get('collection_id')
+    place_id = data.get('place_id')
 
-    # Data validation
-   
-    group_id = data.get('group_id')
-    if not group_id:
-        return jsonify({'error': 'Group ID is required'}), 400
+    if not collection_id or not place_id:
+        return jsonify({'error': 'Collection ID and Place ID are required'}), 400
 
-    groups_collection = get_db()['Groups']
-    
-    try:
-        # Find the group in the database
-        group = groups_collection.find_one({'_id': group_id})
-        if group is None:
-            return jsonify({'error': 'Group not found'}), 404
+    db = get_db()
+    collections_db = db['categories']
 
-        # Retrieve the list of user IDs from the group
-        user_ids = group.get('members', [])
-        if not user_ids:
-            return jsonify({'error': 'No members found in the group'}), 404
+    # Find and update the collection by removing the place_id
+    result = collections_db.update_one(
+        {"_id": ObjectId(collection_id)},
+        {"$pull": {"places": place_id}, "$set": {"updated_at": datetime.utcnow()}}
+    )
 
-        interactions = data.get('interaction', {})
-        if not interactions:
-            return jsonify({'error': 'No interaction data provided'}), 400
+    if result.matched_count == 0:
+        return jsonify({'error': 'Collection not found'}), 404
 
-        # Prepare update data only for spots where 'pressed_save' is 'True'
-        update_data = {
-            '$set': {
-                'last_active': datetime.now()
-            }
-        }
+    return jsonify({"message": "Place removed from collection"}), 200
 
-        # Filter interactions to only include those with 'pressed_save' set to 'True'
-        for spot_id, interaction in interactions.items():
-            if interaction.get('pressed_save') == "True":
-                # Only record 'pressed_save' field
-                update_data['$set'][f'location_specific.{spot_id}.pressed_save'] = "True"
+# NEED TO RUN AUTHENTICATION FOR THIS
+# Deleting an entire category 
+@normal_route.route('/delete_category', methods=['DELETE'])
+def delete_category():
+    category_id = request.args.get('category_id')
 
-        if len(update_data['$set']) == 1:  # Only 'last_active' was set, meaning no 'pressed_save' was True
-            return jsonify({'message': 'No spots to update as pressed_save is not True for any spot'}), 200
+    if not category_id:
+        return jsonify({'error': 'Category ID is required'}), 400
 
-        # Get the User collection to update each user
-        user_collection = get_db()['User']
+    db = get_db()
+    collections_db = db['categories']
 
-        # Update interactions for all group members
-        for user_id in user_ids:
-            # Check if user exists in the database
-            if user_collection.find_one({'_id': int(user_id)}) is None:
-                return jsonify({'error': f'User {user_id} not found'}), 404
+    # Delete the category by category_id
+    result = collections_db.delete_one({"_id": ObjectId(category_id)})
 
-            result = user_collection.update_one(
-                {'_id': int(user_id)},
-                update_data
-            )
+    if result.deleted_count == 0:
+        return jsonify({'error': 'Category not found'}), 404
 
-            if result.modified_count == 0:
-                return jsonify({'error': f'No changes made for user {user_id}'}), 404
+    return jsonify({"message": "Category deleted successfully"}), 200
 
-        return jsonify({'message': 'Interaction recorded successfully for all group members where pressed_save is True'}), 200
 
-    except Exception as e:
-        error_message = f"An error occurred while recording interactions: {str(e)}"
-        print(error_message)  # Optional: log the error message
-        return jsonify({'error': error_message}), 500
+
+
+
+
 
 
 
