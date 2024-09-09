@@ -236,6 +236,186 @@ def retrieve_details():
     return jsonify(results), 200
 
 
+
+# 
+# 
+# Saved spots 
+# 
+@normal_route.route('/retrieve_all_saved', methods=['GET'])
+def retrieve_all_saved():
+    user_id = request.args.get('user_id')
+    if not user_id:
+        return jsonify({'error': 'User ID is required'}), 400
+
+    user_id = int(user_id)  # Convert user_id to integer
+    db = get_db()
+    users_db = db['User']
+    archive_db = db['archived_locations']
+
+    # Query to find the document for the specified user ID in the User collection
+    user_data = users_db.find_one({'_id': user_id})
+    if not user_data:
+        return jsonify({"error": "User not found"}), 404
+
+    # Extract the location_specific field (assumed to be an object)
+    location_specific = user_data.get('location_specific', {})
+    saved_places = [
+        place_id
+        for place_id, place_data in location_specific.items()
+        if place_data.get('pressed_save') == "True"
+    ]
+
+    # Query the ArchivedLocations collection for saved places
+    archived_places = list(archive_db.find({
+        'user_id': user_id,
+        'details.pressed_save': "True"
+    }, {
+        '_id': 0, 'place_id': 1  # Project only place_id, exclude _id from result
+    }))
+
+    # Combine saved places from both active and archived locations (only place_id)
+    saved_places.extend(place['place_id'] for place in archived_places)
+
+    return jsonify(saved_places), 200
+
+# Create collection category 
+@normal_route.route('/create_collection', methods=['POST'])
+def create_collection():
+    data = request.json
+    user_id = data.get('user_id')
+    name = data.get('name')
+    description = data.get('description', '')
+
+    if not user_id or not name:
+        return jsonify({'error': 'User ID and Collection Name are required'}), 400
+
+    db = get_db()
+    collections_db = db['categories']
+
+    # Create the new collection
+    new_collection = {
+        "user_id": user_id,
+        "name": name,
+        "description": description,
+        "places": [],
+        "created_at": datetime.utcnow(),
+        "updated_at": datetime.utcnow()
+    }
+
+    result = collections_db.insert_one(new_collection)
+
+    return jsonify({"message": "Collection created", "collection_id": str(result.inserted_id)}), 201
+
+# Added places into category 
+@normal_route.route('/add_to_collection', methods=['PUT'])
+def add_to_collection():
+    data = request.json
+    collection_id = data.get('collection_id')
+    place_id = data.get('place_id')
+
+    if not collection_id or not place_id:
+        return jsonify({'error': 'Collection ID and Place ID are required'}), 400
+
+    db = get_db()
+    collections_db = db['categories']
+
+    # Find and update the collection by adding the place_id
+    result = collections_db.update_one(
+        {"_id": ObjectId(collection_id)},
+        {"$addToSet": {"places": place_id}, "$set": {"updated_at": datetime.utcnow()}}
+    )
+
+    if result.matched_count == 0:
+        return jsonify({'error': 'categories not found'}), 404
+
+    return jsonify({"message": "Place added to categories"}), 200
+
+
+# Retrieving all category
+@normal_route.route('/retrieve_categories', methods=['GET'])
+def retrieve_categories():
+    user_id = request.args.get('user_id')
+
+    if not user_id:
+        return jsonify({'error': 'User ID is required'}), 400
+
+    db = get_db()
+    collections_db = db['categories']
+
+    # Query to retrieve all categories for the user
+    categories = list(collections_db.find(
+        {"user_id": int(user_id)},
+        {"_id": 1, "name": 1, "description": 1, "places": 1}
+    ))
+
+    # Format the response
+    formatted_categories = [
+        {
+            "category_id": str(category['_id']),
+            "name": category.get('name'),
+            "description": category.get('description', ''),
+            "places": category.get('places', [])
+        }
+        for category in categories
+    ]
+
+    return jsonify(formatted_categories), 200
+
+# Removing a place from a category 
+@normal_route.route('/remove_from_collection', methods=['PUT'])
+def remove_from_collection():
+    data = request.json
+    collection_id = data.get('collection_id')
+    place_id = data.get('place_id')
+
+    if not collection_id or not place_id:
+        return jsonify({'error': 'Collection ID and Place ID are required'}), 400
+
+    db = get_db()
+    collections_db = db['categories']
+
+    # Find and update the collection by removing the place_id
+    result = collections_db.update_one(
+        {"_id": ObjectId(collection_id)},
+        {"$pull": {"places": place_id}, "$set": {"updated_at": datetime.utcnow()}}
+    )
+
+    if result.matched_count == 0:
+        return jsonify({'error': 'Collection not found'}), 404
+
+    return jsonify({"message": "Place removed from collection"}), 200
+
+# NEED TO RUN AUTHENTICATION FOR THIS
+# Deleting an entire category 
+@normal_route.route('/delete_category', methods=['DELETE'])
+def delete_category():
+    category_id = request.args.get('category_id')
+
+    if not category_id:
+        return jsonify({'error': 'Category ID is required'}), 400
+
+    db = get_db()
+    collections_db = db['categories']
+
+    # Delete the category by category_id
+    result = collections_db.delete_one({"_id": ObjectId(category_id)})
+
+    if result.deleted_count == 0:
+        return jsonify({'error': 'Category not found'}), 404
+
+    return jsonify({"message": "Category deleted successfully"}), 200
+
+
+
+
+
+
+
+
+
+# When you clear, you only clear the location_specific for the algorithm to restart
+# But you archive those locations, and can still see them in your saved
+# This is all so that we can perserve it for analytics later on 
 @normal_route.route('/clear_spot_data', methods=['GET'])
 def clear_spot_data():
     """

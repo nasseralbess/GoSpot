@@ -1,0 +1,164 @@
+.overall_modal {
+  padding: 2vh 10vw 10vh 3vw;
+  text-align: left;
+}
+.overall_modal p {
+  color: lightblue;
+}
+.texts {
+  margin-bottom: 40px;
+}
+.texts .main_text {
+  color: lightblue;
+  text-align: left;
+  width: 70%;
+  font-weight: bold;
+}
+
+.category_selection {
+  margin-top: 30px;
+  margin-bottom: 40px;
+}
+
+.search_input {
+  width: 100%;
+  padding: 13px;
+  border-radius: 4px;
+  border: 1px solid #ccc;
+  font-size: 16px;
+}
+
+.drop_down {
+  border: 1px solid #ccc;
+  max-height: 100px;
+  overflow-y: auto;
+  background-color: white;
+  width: 100%;
+  margin: 0;
+  /* Removes any margins */
+  border-radius: 0 0 4px 4px;
+  /* Matches the border radius to the input field */
+  box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
+  position: absolute;
+  top: 100%;
+  /* Positions right below the input */
+  left: 0;
+  z-index: 1;
+}
+.drop_down .dropdown_item {
+  padding: 10px;
+  box-shadow: -4px 4px 5px -3px rgba(0, 0, 0, 0.75);
+  cursor: pointer;
+  background-color: white;
+  /* Default color */
+  text-align: left;
+}
+.drop_down .dropdown_item:hover {
+  color: white;
+  background-color: lightblue;
+}
+
+.selectedCategoriesContainer {
+  margin-bottom: 40px;
+}
+
+.categoryTag {
+  display: inline-block;
+  padding: 10px;
+  margin: 5px;
+  color: white;
+  background-color: lightcoral;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.confirmButton {
+  display: block;
+  margin: 20px 0;
+  /* Adjust the top and bottom margin */
+  padding: 10px 20px;
+  background-color: lightcoral;
+  border: none;
+  color: white;
+  box-shadow: -4px 5px 5px 0px rgba(0, 0, 0, 0.75);
+  font-size: 16px;
+  cursor: pointer;
+  transition: 0.5s;
+  text-align: left;
+  /* Ensure text inside the button is left-aligned */
+  margin-left: 0;
+  /* Align the button to the left */
+}
+.confirmButton:hover {
+  transform: translateY(5px);
+  box-shadow: none;
+}
+
+.slider_container {
+  margin-top: 20px;
+  text-align: center;
+  width: 100%;
+  margin-bottom: 40px;
+  position: relative;
+}
+.slider_container label {
+  text-align: left;
+  color: lightblue;
+}
+
+.slider_label {
+  display: block;
+  margin-bottom: 10px;
+  font-size: 18px;
+  color: #333;
+}
+
+.slider {
+  width: 100%;
+  /* Ensure the slider fits within the container */
+  margin: 0 auto;
+  display: block;
+  position: relative;
+  color: lightblue;
+}
+
+.slider_labels {
+  display: flex;
+  justify-content: space-between;
+  font-size: 16px;
+  color: #555;
+  margin-top: 5px;
+  /* Adjust margin to position labels below the slider */
+  position: relative;
+  width: calc(100% + 20px);
+  left: 0;
+  /* Align labels with the slider's left side */
+  top: 10px;
+  /* Position labels below the slider */
+}
+
+.selected_label {
+  color: lightcoral;
+  /* Highlight color */
+  font-weight: bold;
+}
+
+@media (max-width: 500px) {
+  .overall_modal {
+    max-width: 70vw;
+    font-size: 70%;
+  }
+  .search_input {
+    padding: 10px;
+    font-size: smaller;
+  }
+  .slider_container label {
+    font-size: 3.3vw;
+  }
+  .slider_container .slider_labels {
+    font-size: 2.7vw;
+  }
+  .confirmButton {
+    font-size: smaller;
+  }
+}/*# sourceMappingURL=preferences.module.css.map */
