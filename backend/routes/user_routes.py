@@ -239,44 +239,49 @@ def retrieve_details():
 @normal_route.route('/clear_spot_data', methods=['GET'])
 def clear_spot_data():
     """
-    Clear spot data for a specific user.
-    
-    This endpoint accepts a user ID and clears all spot data for that user.
-    
-    Returns:
-        JSON response indicating the success or failure of the operation.
+    Clear spot data for a specific user while archiving the existing spot data.
     """
-    
     user_id = request.args.get('user_id')
     if not user_id:
         return jsonify({'error': 'User ID is required'}), 400
     
-    user_collection = get_db()['User']
+    user_id = int(user_id)  # Ensure user_id is an integer
+    db = get_db()
+    user_collection = db['User']
+    archive_collection = db['archived_locations']
     
     try:
-        # Find the user in the database
-        user = user_collection.find_one({'_id': int(user_id)})
-        if user is None:
-            return jsonify({'error': 'User not found'}), 404
-        
-        # Clear all location-specific data for the user
-        result = user_collection.update_one(
-            {'_id': int(user_id)},
-            {
-                '$set': {
-                    'location_specific': {}
-                }
-            }
-        )
-        
-        if result.modified_count:
-            return jsonify({'message': f"Spot data cleared for user {user_id}"}), 200
-        else:
-            return jsonify({'error': 'No changes made'}), 404
-    
+        # Start a transaction to ensure atomicity
+        with db.client.start_session() as session:
+            with session.start_transaction():
+                user = user_collection.find_one({'_id': user_id}, session=session)
+                if not user:
+                    return jsonify({'error': 'User not found'}), 404
+                
+                # Archive each location-specific place separately
+                location_specific = user.get('location_specific', {})
+                for place_id, details in location_specific.items():
+                    archive_doc = {
+                        'user_id': user_id,
+                        'place_id': place_id,
+                        'details': details,
+                        'archived_time': datetime.now()
+                    }
+                    archive_collection.insert_one(archive_doc, session=session)
+                
+                # Clear the location-specific data
+                result = user_collection.update_one(
+                    {'_id': user_id},
+                    {'$set': {'location_specific': {}}},
+                    session=session
+                )
+                
+                if result.modified_count:
+                    return jsonify({'message': f"Spot data cleared for user {user_id}"}), 200
+                else:
+                    return jsonify({'error': 'No changes made'}), 404
+
     except Exception as e:
-        error_message = f"An error occurred while clearing spot data: {str(e)}"
-        print(error_message)
-
-
+        error_message = f"An error occurred: {str(e)}"
+        return jsonify({'error': error_message}), 500
 
