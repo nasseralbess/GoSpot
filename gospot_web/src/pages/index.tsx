@@ -89,6 +89,7 @@ export default function Home() {
     setModalIsOpen(true);
   };
 
+  // Updating preferences
   const closeModal = async (categories) => {
     setSelectedCategories(categories);
 
@@ -180,7 +181,7 @@ export default function Home() {
             index={index}
             restaurant={restaurant}
             onSelection={handleSelection}
-            isSelected={interaction[restaurant._id]}
+            // isSelected={interaction[restaurant._id]}
           />
         ))}
       </ul>

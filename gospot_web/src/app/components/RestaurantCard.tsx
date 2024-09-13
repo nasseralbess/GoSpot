@@ -4,7 +4,7 @@ import styles from '../styles/RestaurantCard.module.css';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faShareSquare, faBookmark, faStar } from '@fortawesome/free-solid-svg-icons';
 
-const RestaurantCard = ({ restaurant, onSelection, isSelected, index }) => {
+const RestaurantCard = ({ restaurant, onSelection, index }) => {
   const [modalIsOpen, setModalIsOpen] = useState(false); // State to control the restaurant details modal
   const [totalTimeSpent, setTotalTimeSpent] = useState(0); // Track the total time spent viewing the card
   const [selection, setSelection] = useState(null); // Track if the user has selected check or X
