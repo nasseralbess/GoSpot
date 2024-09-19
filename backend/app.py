@@ -102,7 +102,7 @@ def create_app():
     app = Flask(__name__)
     CORS(app)
 
-    client = MongoClient('mongodb+srv://loko:melike2004@lovelores.h1nkog2.mongodb.net/?retryWrites=true&w=majority&appName=LoveLores')
+    client = MongoClient(MONGO_CLIENT_LINK)
     db = client.GoSpot
 
     df = preprocess_data(initial_weights)
