@@ -11,10 +11,10 @@ const Header: React.FC = () => {
           <Link href="/">GoSpot</Link>
         </div>
         <nav className={styles.nav}>
-          <Link href="/solo" className={styles.navLink}>Solo</Link>
+          <Link href="/" className={styles.navLink}>Solo</Link>
           <Link href="/group" className={styles.navLink}>Group</Link>
           <Link href="/aboutus" className={styles.navLink}>About Us</Link>
-          <Link href="/saved" className={styles.navLink}>Saved</Link>
+          <Link href="/save" className={styles.navLink}>Saved</Link>
           <Link href="/profile" className={styles.navLink}>Profile</Link>
           
         </nav>
