@@ -22,6 +22,7 @@ from routes.user_routes import normal_route
 from routes.group_routes import group_route
 from annoy_index import create_and_save_annoy_index  # Import the new function
 
+MONGO_CLIENT_LINK = "mongodb+srv://loko:melike2004@lovelores.h1nkog2.mongodb.net/?retryWrites=true&w=majority&appName=LoveLores"
 
 category_mapping = {
     'American': ['American', 'New American', 'Southern', 'Soul Food', 'Cajun/Creole', 'Tex-Mex'],
