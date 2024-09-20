@@ -39,7 +39,7 @@ GoSpot is a dynamic restaurant recommendation system designed for users in New Y
 
 ## Screenshots
 
-![Web Interface Screenshot](GoSpot/image.png)
+![Web Interface Screenshot](image.png)
 
 ## How It Works
 
